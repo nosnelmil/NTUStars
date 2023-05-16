@@ -3,7 +3,7 @@
 
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <!-- <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" /> -->
 
         <q-toolbar-title>
           <q-avatar>
@@ -16,9 +16,8 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered mini>
-      <!-- drawer content -->
-    </q-drawer>
+    <!-- <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered mini>
+    </q-drawer> -->
 
     <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered>
       <!-- drawer content -->
