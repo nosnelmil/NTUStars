@@ -1,7 +1,7 @@
 <template>
   <div class="subcontent">
     <div class="row justify-center">
-      <div class="col-12 col-md-10">
+      <div style="display: flex; max-width: 1200px; width: 100%; height: 600px;">
         <q-calendar-day
           ref="calendar"
           v-model="selectedDate"
@@ -9,20 +9,11 @@
           :weekdays="[1,2,3,4,5,6]"
           animated
           bordered
-          transition-next="slide-left"
-          transition-prev="slide-right"
           no-active-date
           :interval-minutes="30"
           :interval-start="16"
           :interval-count="32"
-          :interval-height="40"
-          @change="onChange"
-          @moved="onMoved"
-          @click-date="onClickDate"
-          @click-time="onClickTime"
-          @click-interval="onClickInterval"
-          @click-head-intervals="onClickHeadIntervals"
-          @click-head-day="onClickHeadDay"
+          :interval-height="30"
         >
         <!-- TODO: make interval-count dynamic -->
           <template #head-day-event="{ scope: { timestamp } }">
@@ -36,39 +27,40 @@
                     :style="badgeStyles(lesson, 'header')"
                     style="width: 10px; cursor: pointer; height: 12px; font-size: 10px; margin: 1px;"
                   >
-                    <q-tooltip>{{ lesson.time + ' - ' + lesson.details }}</q-tooltip>
+                    <q-tooltip>{{ lesson.time + ' - ' + lesson.type }}</q-tooltip>
                   </q-badge>
               </template>
-            </div>
-          </template>
+            </div> 
+          </template> 
+          
 
-          <template #day-body="{ scope: { timestamp, timeStartPos, timeDurationHeight } }">
-            <template
-              v-for="lesson in getEvents(timestamp.date)"
-              :key="lesson.id"
-            >
-              <div
-                v-if="lesson.time !== undefined"
-                class="my-lesson"
-                :class="[{'lighten': lesson.isTemp}, lesson.class]"
-                :style="Object.assign({}, badgeStyles(lesson, 'body', timeStartPos, timeDurationHeight), lesson.style)"
+          <template #day-body="{ scope: {timestamp, timeStartPos, timeDurationHeight }}">
+
+              <template
+                v-for="lesson in getEvents(timestamp.date)"
+                :key="lesson.id"
               >
-                <div class="text-left q-pa-xs">
-                    <div class="text-bold ellipsis">
-                      {{ lesson.courseCode }} <span >{{ lesson.name }}</span>
-                    </div>
-                    <div class="calendar-body-text"> {{ lesson.index }}</div>
-                    <div class="calendar-body-text">{{ lesson.type }}</div>
-                    <div class="calendar-body-text">{{ lesson.frequency }}</div>
-                  <q-tooltip v-if="!lesson.isTemp">
-                    <div>Type: {{ lesson.type }}</div>
-                    <div>Index: {{ lesson.index }}</div>
-                    <div>Group: {{ lesson.group }}</div>
-                    <div>Venue: {{ lesson.venue }}</div>
-                    <div>Weeks: {{ lesson.weeks }}</div>
-                  </q-tooltip>
+                <div
+                  v-if="lesson.time !== undefined"
+                  class="my-lesson"
+                  :class="[{'lighten': lesson.isTemp}, lesson.class]"
+                  :style="Object.assign({}, badgeStyles(lesson, 'body', timeStartPos, timeDurationHeight), lesson.style)"
+                >
+                  <div class="text-left q-pa-xs">
+                      <div class="text-bold ellipsis">
+                        {{ lesson.courseCode }} <span >{{ lesson.name }}</span>
+                      </div>
+                      <div class="calendar-body-text"> {{ lesson.index }}</div>
+                      <div class="calendar-body-text">{{ lesson.type }} | {{ lesson.frequency }}</div>
+                    <q-tooltip v-if="!lesson.isTemp">
+                      <div>Type: {{ lesson.type }}</div>
+                      <div v-if="lesson.index">Index: {{ lesson.index }}</div>
+                      <div v-if="lesson.group">Group: {{ lesson.group }}</div>
+                      <div>Venue: {{ lesson.venue }}</div>
+                      <div> Weeks: {{ lesson.weeks }}</div>
+                    </q-tooltip>
+                  </div>
                 </div>
-              </div>
             </template>
           </template>
         </q-calendar-day>
@@ -80,116 +72,38 @@
 <script setup>
 import {
   QCalendarDay,
-  addToDate,
-  parseTimestamp,
-  parseDate,
+
 } from '@quasar/quasar-ui-qcalendar/src/QCalendarDay.js'
 import '@quasar/quasar-ui-qcalendar/src/QCalendarVariables.sass'
 import '@quasar/quasar-ui-qcalendar/src/QCalendarTransitions.sass'
 import '@quasar/quasar-ui-qcalendar/src/QCalendarDay.sass'
 
 import { computed, ref } from 'vue'
+import { useTimetableStore } from '../stores/timetable'
+import { watch } from 'vue'
+import { groupClashedLessons } from '@/composables/groupClashedLessons.js'
 
-// The function below is used to set up our demo data
-const CURRENT_DAY = new Date("2023-05-01")
-function getCurrentDay (day) {
-  const newDay = new Date(CURRENT_DAY)
-  newDay.setDate(day)
-  const tm = parseDate(newDay)
-  return tm.date
-}
-
+const timetableStore = useTimetableStore()
 const calendar = ref(null)
 const selectedDate = "2023-05-01"
-const lessons = [
-  {
-    id: 'SC2006' + '10686' + '0',
-    name: "Software Engineering",
-    courseCode: 'SC2006',
-    index: '10686',
-    type: "LEC/STUDIO",
-    group: "L1",
-    venue: "LT2A",
-    date: getCurrentDay(2),
-    weeks: [1,2,3,4,5,6,7,8],
-    frequency:"Every Week",
-    time: '10:00',
-    duration: 59,
-    bgcolor: 'red',
-    isTemp: false
-  },
-  {
-    id: 'SC2006' + '10686' + '10',
-    name: "Software Engineering",
-    courseCode: 'SC2006',
-    index: '10686',
-    type: "LEC/STUDIO",
-    group: "L1",
-    venue: "LT2A",
-    date: getCurrentDay(2),
-    weeks: "1,2,3,4,5,6,7,8",
-    frequency:"Every Week",
-    time: '10:00',
-    duration: 59,
-    bgcolor: 'red',
-    isTemp: false
-  },
-  {
-    id: 'SC2006' + '10686' + '1',
-    name: "Software Engineering",
-    courseCode: 'SC2006',
-    index: '10686',
-    type: "LEC/STUDIO",
-    group: "L1",
-    venue: "LT2A",
-    date: getCurrentDay(4),
-    weeks: "1,2,3,4,5,6,7,8",
-    frequency:"Every Week",
-    time: '10:00',
-    duration: 59,
-    bgcolor: 'red',
-    isTemp: false
-  },
-  {
-    id: 'SC2006' + '10686' + '2',
-    name: "Software Engineering",
-    courseCode: 'SC2006',
-    index: '10686',
-    type: "TUT",
-    group: "L1",
-    venue: "TR+9",
-    date: getCurrentDay(1),
-    weeks: "1,2,3,4,5,6,7,8",
-    frequency:"Every Week",
-    time: '08:30',
-    duration: 59,
-    bgcolor: 'red',
-    isTemp: true
-  },
-]
+const lessonsMap = ref({})
+const lessons = timetableStore.getLessons
 
 // convert the lessons into a map of lists keyed by date
-const lessonsMap = computed(() => {
+watch(lessons, (newLessons,) => {
+  console.log("lessonsMap")
+  const clone = newLessons.map(a=> {return {...a}})
   const map = {}
   // this.lessons.forEach(lesson => (map[ lesson.date ] = map[ lesson.date ] || []).push(lesson))
-  lessons.forEach(lesson => {
+  console.log("Clone", clone)
+  clone.forEach(lesson => {
     if (!map[ lesson.date ]) {
       map[ lesson.date ] = []
     }
     map[ lesson.date ].push(lesson)
-    if (lesson.days) {
-      let timestamp = parseTimestamp(lesson.date)
-      let days = lesson.days
-      do {
-        timestamp = addToDate(timestamp, { day: 1 })
-        if (!map[ timestamp.date ]) {
-          map[ timestamp.date ] = []
-        }
-        map[ timestamp.date ].push(lesson)
-      } while (--days > 0)
-    }
   })
-  return map
+  console.log("lessonsMap ended", map)
+  lessonsMap.value = map
 })
 
 function badgeClasses (lesson, type) {
@@ -203,6 +117,7 @@ function badgeClasses (lesson, type) {
   }
 }
 function badgeStyles (lesson, type, timeStartPos = undefined, timeDurationHeight = undefined) {
+  console.log("badge")
   const s = {}
   if (timeStartPos && timeDurationHeight) {
     s.top = timeStartPos(lesson.time) + 'px'
@@ -212,42 +127,27 @@ function badgeStyles (lesson, type, timeStartPos = undefined, timeDurationHeight
   return s
 }
 function getEvents (dt) {
+
+  console.log("getEvents", dt)
   // get all lessons for the specified date
   const lessons = lessonsMap.value[ dt ] || []
-  let eventLen = lessons.length
-  for(var i =0; i<eventLen; i++){
-    const lesson = lessons[i]
-    lesson.class = {
-      [ `text-white bg-${ lesson.bgcolor }`]: true, 
-      'rounded-border': true
-    }
-    lesson.style = {
-      'left': `${100/eventLen*i}%`,
-      'width': `${(100-eventLen)/eventLen}%`,
+  const groups = groupClashedLessons(lessons)
+  for(const group of groups){
+    const groupLen = group.length
+    for(var i=0; i<groupLen; i++){
+      const lesson = group[i]
+      lesson.class = {
+        [ `text-white bg-${ lesson.bgcolor }`]: true, 
+        'rounded-border': true
+      }
+      lesson.style = {
+        'left': `${100/groupLen*i}%`,
+        'width': `${(100-groupLen)/groupLen}%`,
+      }
     }
   }
+  console.log("getEvents ended")
   return lessons
-}
-function onMoved (data) {
-  console.log('onMoved', data)
-}
-function onChange (data) {
-  console.log('onChange', data)
-}
-function onClickDate (data) {
-  console.log('onClickDate', data)
-}
-function onClickTime (data) {
-  console.log('onClickTime', data)
-}
-function onClickInterval (data) {
-  console.log('onClickInterval', data)
-}
-function onClickHeadIntervals (data) {
-  console.log('onClickHeadIntervals', data)
-}
-function onClickHeadDay (data) {
-  console.log('onClickHeadDay', data)
 }
 </script>
 

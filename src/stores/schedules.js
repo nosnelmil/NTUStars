@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
-import {
-  parseDate,
-} from '@quasar/quasar-ui-qcalendar/src/QCalendarDay.js'
+import { parseDate } from '@quasar/quasar-ui-qcalendar/src/QCalendarDay.js'
 const firebaseEndpoint = "http://127.0.0.1:5001/ntu-schedule-maker/asia-east2/app/"
 const Day = {
 	"MON": 1,
@@ -79,27 +77,35 @@ export const useSchedules = defineStore('schedules', {
           "semester":semester,
           "courseCode": courseCode
         })
-        const response = await fetch(
-          firebaseEndpoint + "get-schedule",
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: reqBody
-          })
-        const data = await response.json()
-        if(data.success){
-          const parsedSchedule = this.parseSchedule(data.schedule, data.name)
-          if(!(semester in this.courses)){
-            this.courses[semester] = {}
+        try{
+          const response = await fetch(
+            firebaseEndpoint + "get-schedule",
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: reqBody
+            })
+          const data = await response.json()
+          if(data.success){
+            const parsedSchedule = this.parseSchedule(data.schedule, data.name)
+            if(!(semester in this.schedules)){
+              this.schedules[semester] = {}
+            }
+            this.schedules[semester][courseCode] = parsedSchedule
+            console.log("Found Schedule", parsedSchedule)
+            return parsedSchedule
+          }else{
+            // error
+            Notify.create({
+              message: `${courseCode} does not exist for sem ${semester}`,
+              color: 'negative'
+            })
           }
-          this.courses[semester][courseCode] = parsedSchedule
-          console.log("Found Schedule", parsedSchedule)
-          return parsedSchedule
-        }else{
-          // error
+        }catch(e){
+          console.log(e)
           Notify.create({
-            message: `${courseCode} does not exist for sem ${semester}`,
-            color: 'error'
+            message: `Error retrieving ${courseCode} schedule for sem ${semester}`,
+            color: 'negative'
           })
         }
 
@@ -121,7 +127,8 @@ export const useSchedules = defineStore('schedules', {
       console.log("Parsing Schedule")
       var result = {}
       var lectureAdded = false
-      result["Lecture"] = []
+      result["lecture"] = []
+      result["name"] = courseName
       for(const [index, indexSchedule] of Object.entries(schedule)){
         result[index] = []
         for(var i=0; i<indexSchedule.length; i++){
@@ -147,7 +154,7 @@ export const useSchedules = defineStore('schedules', {
           if(classData.type == "LEC/STUDIO"){
             classInfo.index = ""
             classInfo.group = ""
-            result["Lecture"].push(classInfo)
+            result["lecture"].push(classInfo)
           }else{
             result[index].push(classInfo)
           }
