@@ -1,13 +1,11 @@
 <template>
   <div class="subcontent">
     <div class="row justify-center">
-      <div style="display: flex; max-width: 1200px; width: 100%; height: 600px;">
+      <div style="display: flex; width: 1200px; height:600px; ">
         <q-calendar-day
-          ref="calendar"
           v-model="selectedDate"
           view="week"
           :weekdays="[1,2,3,4,5,6]"
-          animated
           bordered
           no-active-date
           :interval-minutes="30"
@@ -22,7 +20,7 @@
                 v-for="lesson in lessonsMap[timestamp.date]" 
                 :key="lesson.id">
                 <q-badge
-                    v-if="!temp"
+                    v-if="!lesson.isTemp"
                     :class="badgeClasses(lesson, 'header')"
                     :style="badgeStyles(lesson, 'header')"
                     style="width: 10px; cursor: pointer; height: 12px; font-size: 10px; margin: 1px;"
@@ -44,7 +42,8 @@
                   class="my-lesson"
                   :class="[{'lighten': lesson.isTemp}, lesson.class]"
                   :style="Object.assign({}, badgeStyles(lesson, 'body', timeStartPos, timeDurationHeight), lesson.style)"
-                  @click="handleShowPreview(lesson)"
+                  @click="handleLessonClick(lesson, lesson.isTemp)"
+                  @mouseover="hoveredIndex = lesson.index" @mouseleave="hoveredIndex = null"
                 >
                   <div class="text-left q-pa-xs">
                       <div class="text-bold ellipsis">
@@ -82,18 +81,27 @@ import { computed, ref } from 'vue'
 import { useTimetableStore } from '../stores/timetable'
 import { watch } from 'vue'
 import { groupClashedLessons } from '@/composables/groupClashedLessons.js'
-
+const dates = ["2023-05-01","2023-05-02","2023-05-03","2023-05-04","2023-05-05","2023-05-06"]
 const timetableStore = useTimetableStore()
 const calendar = ref(null)
 const selectedDate = "2023-05-01"
 const lessonsMap = ref({})
 const lessons = timetableStore.getLessons
+const showingPreview = ref(null)
+const hoveredIndex = ref(null)
 
-function handleShowPreview(lesson){
-  console.log("show preview clicked", lesson)
+function handleLessonClick(lesson, isTemp){
+  // if temp, swap showing index
+  if(showingPreview.value == lesson.courseCode){
+    timetableStore.resetPreview()
+    showingPreview.value = null 
+  }else{
+    timetableStore.setPreview(lesson.courseCode, lesson.index)
+    showingPreview.value = lesson.courseCode
+  }
 }
 
-// convert the lessons into a map of lists keyed by date
+// convert the lessons into a map of lists keyed by date 
 watch(() => timetableStore.getLessons, (newLessons,) => {
   console.log("called")
   const clone = newLessons.map(a=> {return {...a}})
@@ -106,7 +114,7 @@ watch(() => timetableStore.getLessons, (newLessons,) => {
     map[ lesson.date ].push(lesson)
   })
   lessonsMap.value = map
-},{ deep: true })
+},{ deep: true , immediate: true})
 
 function badgeClasses (lesson, type) {
   const isHeader = type === 'header'
@@ -128,6 +136,7 @@ function badgeStyles (lesson, type, timeStartPos = undefined, timeDurationHeight
   return s
 }
 function getEvents (dt) {
+  console.log("getevent called")
   // get all lessons for the specified date
   const lessons = lessonsMap.value[ dt ] || []
   const groups = groupClashedLessons(lessons)

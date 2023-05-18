@@ -21,7 +21,7 @@ export const useTimetableStore = defineStore('timetable', {
       return state.colors.pop()
     },
     getLessons: (state) => {
-      return state.timeTable[state.semester]
+      return state.timeTable[state.semester] ? state.timeTable[state.semester].concat(state.preview[state.semester]) : []
     },
     getCoursesAdded: (state) => {
       return {...state.coursesAdded[state.semester]}
@@ -29,21 +29,7 @@ export const useTimetableStore = defineStore('timetable', {
   },
   
   actions: {
-    async setPreview(courseCode, showing){
-      const scheduleStore = useSchedules()
-      const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
-      const preview = []
-      if(schedule){
-        for(const [index, classInfo] of schedule){
-          if (index == "Lecture" || classInfo.index == showing.index) continue
-          preview.push({
-            isTemp: true,
-            bgcolor: showing.bgcolor,
-            ...classInfo
-          })
-        }
-      }
-    },
+    
     async addCourse(code){
       const courseCode = code.toUpperCase()
       const semester = this.semester
@@ -81,7 +67,7 @@ export const useTimetableStore = defineStore('timetable', {
       }
       let addedIndex = ""
       for(const [index, indexSchedule] of Object.entries(schedule)){
-        if(index == "lecture") continue
+        if(index == "lecture" || index == "name") continue
         for(const classInfo of indexSchedule){
           newLessons.push({
             isTemp: false,
@@ -105,11 +91,50 @@ export const useTimetableStore = defineStore('timetable', {
         courseCode: courseCode
       }
     },
-    removeCourse(code){
-
+    removeCourse(courseCode){
+      const semester = this.semester
+      if(!(semester in this.timeTable)){
+        Notify.create("Unable to remove course")
+        return
+      }
+      this.timeTable[semester] = this.timeTable[semester].filter((lesson) => lesson.courseCode != courseCode)
+      // remove from preview if preview is the deleted coursecode
+      if(this.preview[semester] && this.preview[semester][0].courseCode == courseCode){
+        this.preview[semester] = []
+      }
+      console.log(semester, courseCode)
+      console.log(this.coursesAdded)
+      const colorUsed = this.coursesAdded[semester][courseCode].bgcolor
+      this.returnColor(colorUsed)
+      delete this.coursesAdded[semester][courseCode]
+    },
+    async setPreview(courseCode){
+      console.log("entered set preview")
+      const scheduleStore = useSchedules()
+      const semester = this.semester
+      const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
+      console.log("schedule", schedule)
+      const showing = this.coursesAdded[semester][courseCode]
+      const preview = []
+      if(schedule){
+        for(const [index, indexSchedule] of Object.entries(schedule)){
+          if (index == "lecture" || index == "name" || indexSchedule[0].index == showing.index) continue
+          for(const classInfo of indexSchedule){
+            preview.push({
+              isTemp: true,
+              bgcolor: showing.bgcolor,
+              ...classInfo
+            })
+          }
+        }
+      }
+      this.preview[semester] = preview
+    },
+    resetPreview(){
+      this.preview[this.semester] = []
     },
     returnColor(color){
-      this.state.push(color)
+      this.colors.push(color)
     },
     getCurrentDay (day) {
       const CURRENT_DAY = new Date("2023-05-01")

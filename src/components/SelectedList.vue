@@ -5,7 +5,7 @@
         v-for="course in Object.values(timetableStore.getCoursesAdded)"
         :key="course.courseCode"
       >
-        <SelectedListItem :course="course" @handle-remove="handleRemove"/>
+        <SelectedListItem :course="course" @handle-remove="(e) => handleRemove(course)"/>
         <q-separator spaced />
       </template>
     
@@ -19,7 +19,7 @@ import SelectedListItem from './SelectedListItem.vue';
 
 const timetableStore = useTimetableStore()
 function handleRemove(course){
-  console.log("remove course: ", course)
+  timetableStore.removeCourse(course.courseCode)  
 }
 
 </script>

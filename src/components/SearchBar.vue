@@ -38,5 +38,6 @@ async function onSubmit(){
   isLoading.value = true;
   await timetableStore.addCourse(search.value) 
   isLoading.value = false
+  search.value=null
 }
 </script>
