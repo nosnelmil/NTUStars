@@ -1,13 +1,12 @@
 <template>
-  <div class="q-gutter-md row items-start">
+  <div class="row items-start">
     <q-form
       @submit="onSubmit"
       @reset="onReset"
-      class="q-gutter-md"
     >
       <q-input
         v-model="search"
-        label="Course Code"
+        label="Enter Course Code"
         debounce="500"
         filled
         :loading="isLoading"
@@ -18,7 +17,7 @@
           <q-icon name="search" />
         </template>
       </q-input>
-      <q-btn label="Add Course" type="submit" color="primary"/>
+      <!-- <q-btn label="Add Course" type="submit" color="primary"/> -->
     </q-form>
   </div>
   <!-- <q-btn @click="timetableStore.testAddCourse()">
@@ -37,7 +36,7 @@ async function onSubmit(){
   if(!search.value) return
  
   isLoading.value = true;
-  await timetableStore.addCourse("2022;2", search.value) 
+  await timetableStore.addCourse(search.value) 
   isLoading.value = false
 }
 </script>

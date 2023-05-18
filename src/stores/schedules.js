@@ -65,11 +65,9 @@ export const useSchedules = defineStore('schedules', {
   },
   actions: {
     async findCourseSchedule(semester, code){
-      console.log("Finding Schedule", semester, code)
       const courseCode = code.toUpperCase();
       let schedule = this.getSchedule(semester, courseCode)
       if(schedule){
-        console.log("Found Schedule", schedule)
         return schedule
       }else{
         // get from database
@@ -87,12 +85,11 @@ export const useSchedules = defineStore('schedules', {
             })
           const data = await response.json()
           if(data.success){
-            const parsedSchedule = this.parseSchedule(data.schedule, data.name)
+            const parsedSchedule = this.parseSchedule(data)
             if(!(semester in this.schedules)){
               this.schedules[semester] = {}
             }
             this.schedules[semester][courseCode] = parsedSchedule
-            console.log("Found Schedule", parsedSchedule)
             return parsedSchedule
           }else{
             // error
@@ -102,7 +99,6 @@ export const useSchedules = defineStore('schedules', {
             })
           }
         }catch(e){
-          console.log(e)
           Notify.create({
             message: `Error retrieving ${courseCode} schedule for sem ${semester}`,
             color: 'negative'
@@ -123,21 +119,21 @@ export const useSchedules = defineStore('schedules', {
 
     // Helper Functions
     // parse schedule to timetable format
-    parseSchedule(schedule, courseName){
-      console.log("Parsing Schedule")
+    parseSchedule(data){
+      const {schedule, name, courseCode} = data
       var result = {}
       var lectureAdded = false
       result["lecture"] = []
-      result["name"] = courseName
+      result["name"] = name
       for(const [index, indexSchedule] of Object.entries(schedule)){
         result[index] = []
         for(var i=0; i<indexSchedule.length; i++){
           const classData = indexSchedule[i]
           if(lectureAdded && classData.type == "LEC/STUDIO") continue;
           let classInfo = {
-            id:  `${classData.courseCode} ${index} ${i}`,
-            name: courseName,
-            courseCode: classData.courseCode,
+            id:  `${courseCode} ${index} ${i}`,
+            name: name,
+            courseCode: courseCode,
             index: index,
             type: classData.type,
             group: classData.group,
@@ -161,7 +157,6 @@ export const useSchedules = defineStore('schedules', {
         }
         lectureAdded = true
       }
-      console.log("Parsed Successfully", result)
       return result
     },
     parseWeeks(weekArray){

@@ -35,7 +35,6 @@
           
 
           <template #day-body="{ scope: {timestamp, timeStartPos, timeDurationHeight }}">
-
               <template
                 v-for="lesson in getEvents(timestamp.date)"
                 :key="lesson.id"
@@ -45,6 +44,7 @@
                   class="my-lesson"
                   :class="[{'lighten': lesson.isTemp}, lesson.class]"
                   :style="Object.assign({}, badgeStyles(lesson, 'body', timeStartPos, timeDurationHeight), lesson.style)"
+                  @click="handleShowPreview(lesson)"
                 >
                   <div class="text-left q-pa-xs">
                       <div class="text-bold ellipsis">
@@ -89,22 +89,24 @@ const selectedDate = "2023-05-01"
 const lessonsMap = ref({})
 const lessons = timetableStore.getLessons
 
+function handleShowPreview(lesson){
+  console.log("show preview clicked", lesson)
+}
+
 // convert the lessons into a map of lists keyed by date
-watch(lessons, (newLessons,) => {
-  console.log("lessonsMap")
+watch(() => timetableStore.getLessons, (newLessons,) => {
+  console.log("called")
   const clone = newLessons.map(a=> {return {...a}})
   const map = {}
   // this.lessons.forEach(lesson => (map[ lesson.date ] = map[ lesson.date ] || []).push(lesson))
-  console.log("Clone", clone)
   clone.forEach(lesson => {
     if (!map[ lesson.date ]) {
       map[ lesson.date ] = []
     }
     map[ lesson.date ].push(lesson)
   })
-  console.log("lessonsMap ended", map)
   lessonsMap.value = map
-})
+},{ deep: true })
 
 function badgeClasses (lesson, type) {
   const isHeader = type === 'header'
@@ -117,7 +119,6 @@ function badgeClasses (lesson, type) {
   }
 }
 function badgeStyles (lesson, type, timeStartPos = undefined, timeDurationHeight = undefined) {
-  console.log("badge")
   const s = {}
   if (timeStartPos && timeDurationHeight) {
     s.top = timeStartPos(lesson.time) + 'px'
@@ -127,8 +128,6 @@ function badgeStyles (lesson, type, timeStartPos = undefined, timeDurationHeight
   return s
 }
 function getEvents (dt) {
-
-  console.log("getEvents", dt)
   // get all lessons for the specified date
   const lessons = lessonsMap.value[ dt ] || []
   const groups = groupClashedLessons(lessons)
@@ -146,9 +145,10 @@ function getEvents (dt) {
       }
     }
   }
-  console.log("getEvents ended")
   return lessons
 }
+
+
 </script>
 
 <style lang="sass" scoped>

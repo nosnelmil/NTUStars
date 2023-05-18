@@ -48,7 +48,6 @@ export function groupClashedLessons(lessons) {
   const clashedGroups = groups.map((group) => {
     return group.map((i) => sortedlessons[i]);
   });
-  console.log("groupClashedLessons finished", clashedGroups)
 
   return clashedGroups;
 }
@@ -59,5 +58,4 @@ function addStartandEndTime(lessons){
     lesson.startTime = parseInt(lesson.time)
     lesson.endTime = parseInt(lesson.time) + lesson.duration
   }
-  console.log("lessons", lessons)
 }

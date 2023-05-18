@@ -7,25 +7,29 @@ export const useTimetableStore = defineStore('timetable', {
   state: () => {
     return {
       coursesAdded: {},
-      preview: [],
-      timeTable: [], // the one thats showing on the screen
+      preview: {},
+      timeTable: {}, // the one thats showing on the screen
       colors: ['red', 'pink', 'green', 'teal', 'blue', 'light-blue', 'cyan', 'deep-purple', 'orange'],
-      isLoading: false
+      isLoading: false,
+      semester: "2022;2",
     }
   },
   
   getters: {
     getColor: (state) =>  {
+      console.log("colors", state.colors)
       return state.colors.pop()
     },
     getLessons: (state) => {
-      console.log("Get Lessons called")
-      return state.timeTable
+      return state.timeTable[state.semester]
+    },
+    getCoursesAdded: (state) => {
+      return {...state.coursesAdded[state.semester]}
     }
   },
   
   actions: {
-    async setPreview(semester, courseCode, showing){
+    async setPreview(courseCode, showing){
       const scheduleStore = useSchedules()
       const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
       const preview = []
@@ -40,43 +44,69 @@ export const useTimetableStore = defineStore('timetable', {
         }
       }
     },
-    async addCourse(semester, courseCode){
-      console.log("Adding Course Schedule")
-      if(courseCode in this.coursesAdded){
+    async addCourse(code){
+      const courseCode = code.toUpperCase()
+      const semester = this.semester
+      if(semester in this.coursesAdded && courseCode in this.coursesAdded[semester]){
         Notify.create({message: "Course already in timetable!", color: "negative"})
         return
       }
-      this.coursesAdded[courseCode] = {
-        isLoading: true,
-        name: "",
+      if(!(semester in this.coursesAdded)){
+        this.coursesAdded[semester] = {}
       }
+      this.coursesAdded[semester][courseCode] = {
+        isLoading: true,
+        courseName: "",
+        index: "",
+        bgcolor: "",
+        courseCode: courseCode
+      }
+      // retrieve the course scheudle
       const scheduleStore = useSchedules()
       const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
-      if(!schedule) return null
-      const color = this.getColor
+      if(!schedule) {
+        // course does not exist / there is no schedule
+        delete this.coursesAdded[semester][courseCode]
+        return null
+      }
+      var bgcolor = this.colors.pop() || "orange"
+      const newLessons = []
+      // if(!(semester in this.timeTable)) this.timeTable[semester] = []
       for(const classInfo of schedule["lecture"]){
-        this.timeTable.push({
+        newLessons.push({
           isTemp: false,
-          bgcolor: color,
+          bgcolor: bgcolor,
           ...classInfo
         })
       }
+      let addedIndex = ""
       for(const [index, indexSchedule] of Object.entries(schedule)){
         if(index == "lecture") continue
         for(const classInfo of indexSchedule){
-          this.timeTable.push({
+          newLessons.push({
             isTemp: false,
-            bgcolor: color,
+            bgcolor: bgcolor,
             ...classInfo
           })
         }
+        addedIndex = index
         break
       }
-      this.coursesAdded[courseCode] = {
-        isLoading: false,
-        name: schedule.name
+      if (semester in this.timeTable){
+        this.timeTable[semester] = this.timeTable[semester].concat(newLessons)
+      }else{
+        this.timeTable[semester] = newLessons
       }
-      console.log("Added Course Schedule")
+      this.coursesAdded[semester][courseCode] = {
+        isLoading: false,
+        courseName: schedule.name,
+        index: addedIndex,
+        bgcolor: bgcolor,
+        courseCode: courseCode
+      }
+    },
+    removeCourse(code){
+
     },
     returnColor(color){
       this.state.push(color)

@@ -19,9 +19,12 @@
     <!-- <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered mini>
     </q-drawer> -->
 
-    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered class="q-gutter-md row items-start" overlay>
+    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered class="col items-start" overlay>
+      <div class="row justify-center q-mt-lg q-mb-md">
         <SearchBar/>
-        <SelectedList />
+      </div>
+      <q-separator spaced />
+      <SelectedList />
     </q-drawer>
 
     <q-page-container>
