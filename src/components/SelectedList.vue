@@ -8,8 +8,6 @@
         <SelectedListItem :course="course" @handle-remove="(e) => handleRemove(course)"/>
         <q-separator spaced />
       </template>
-    
-
   </q-list>
 </template>
 

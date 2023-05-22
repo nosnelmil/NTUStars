@@ -2,7 +2,7 @@
 <q-item>
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
-      <span class="text-weight-medium">{{course.courseCode}}</span><div :class="`q-ml-xs color-cube bg-${course.bgcolor}`"></div>
+      <span class="text-weight-medium">{{course.courseCode}}</span><div class="q-ml-xs color-cube" :style="{backgroundColor: course.backgroundColor}"></div>
     </q-item-label>
     <q-item-label caption lines="1">
       {{course.courseName}}

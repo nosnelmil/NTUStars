@@ -1,15 +1,17 @@
 import { defineStore } from 'pinia'
 import { useSchedules } from './schedules'
 import { parseDate } from '@quasar/quasar-ui-qcalendar/src/QCalendarDay.js'
-import { Notify } from 'quasar';
+import { Notify, event } from 'quasar';
+import { markRaw } from 'vue';
 
 export const useTimetableStore = defineStore('timetable', {
   state: () => {
     return {
+      calenderApi: null,
       coursesAdded: {},
       preview: {},
       timeTable: {}, // the one thats showing on the screen
-      colors: ['red', 'pink', 'green', 'teal', 'blue', 'light-blue', 'cyan', 'deep-purple', 'orange'],
+      colors: ['#EF5350', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#78909C'],
       isLoading: false,
       semester: "2022;2",
     }
@@ -20,8 +22,11 @@ export const useTimetableStore = defineStore('timetable', {
       console.log("colors", state.colors)
       return state.colors.pop()
     },
-    getLessons: (state) => {
-      return state.timeTable[state.semester] ? state.timeTable[state.semester].concat(state.preview[state.semester]) : []
+    getTimeTable: (state) => {
+      return state.timeTable[state.semester]
+    },
+    getPreview: (state) => {
+      return state.preview[state.semester]
     },
     getCoursesAdded: (state) => {
       return {...state.coursesAdded[state.semester]}
@@ -29,22 +34,27 @@ export const useTimetableStore = defineStore('timetable', {
   },
   
   actions: {
-    
+    setCalendarApi(calenderApi){
+      this.calenderApi = calenderApi
+      console.log(this.calenderApi)
+    },
+
     async addCourse(code){
       const courseCode = code.toUpperCase()
       const semester = this.semester
+      // check if already in timetable
       if(semester in this.coursesAdded && courseCode in this.coursesAdded[semester]){
         Notify.create({message: "Course already in timetable!", color: "negative"})
         return
       }
-      if(!(semester in this.coursesAdded)){
-        this.coursesAdded[semester] = {}
-      }
+      // instantiate if needed
+      if(!(semester in this.coursesAdded)) this.coursesAdded[semester] = {}
+      // add initial value to coursesAdded
       this.coursesAdded[semester][courseCode] = {
         isLoading: true,
         courseName: "",
         index: "",
-        bgcolor: "",
+        backgroundColor: "",
         courseCode: courseCode
       }
       // retrieve the course scheudle
@@ -55,56 +65,79 @@ export const useTimetableStore = defineStore('timetable', {
         delete this.coursesAdded[semester][courseCode]
         return null
       }
-      var bgcolor = this.colors.pop() || "orange"
-      const newLessons = []
-      // if(!(semester in this.timeTable)) this.timeTable[semester] = []
+      // get a color for this course
+      var backgroundColor = this.colors.pop() || "#5C6BC0"
+     
+      // store ids in state so its easier to delete later
+      // instantiate
+      if (!(semester in this.timeTable)) this.timeTable[semester] = {}
+      this.timeTable[semester][courseCode] = {}
+      this.timeTable[semester][courseCode]["lecture"] = []
+      this.timeTable[semester][courseCode]["lessons"] = []
+
+      // add the lecture slots for this course
       for(const classInfo of schedule["lecture"]){
-        newLessons.push({
+        this.calenderApi.getApi().view.calendar.addEvent({
+          editable: false,
+          classNames: [],
           isTemp: false,
-          bgcolor: bgcolor,
+          backgroundColor: backgroundColor,
+          borderColor: backgroundColor,
+          textColor: 'white',
           ...classInfo
         })
+        this.timeTable[semester][courseCode]["lecture"].push(classInfo.id)
       }
+
+      // add the first non-lecture slot for this course
       let addedIndex = ""
       for(const [index, indexSchedule] of Object.entries(schedule)){
-        if(index == "lecture" || index == "name") continue
+        if(index == "lecture" || index == "courseName") continue
         for(const classInfo of indexSchedule){
-          newLessons.push({
+          this.calenderApi.getApi().view.calendar.addEvent({
+            editable: false,
+            classNames: [],
             isTemp: false,
-            bgcolor: bgcolor,
+            backgroundColor: backgroundColor,
+            borderColor: backgroundColor,
+            textColor: 'white',
+            backgroundColor: backgroundColor,
             ...classInfo
           })
+          this.timeTable[semester][courseCode]["lessons"].push(classInfo.id)
         }
         addedIndex = index
         break
       }
-      if (semester in this.timeTable){
-        this.timeTable[semester] = this.timeTable[semester].concat(newLessons)
-      }else{
-        this.timeTable[semester] = newLessons
-      }
+    
+      // update courses added state
       this.coursesAdded[semester][courseCode] = {
         isLoading: false,
-        courseName: schedule.name,
+        courseName: schedule.courseName,
         index: addedIndex,
-        bgcolor: bgcolor,
+        backgroundColor: backgroundColor,
         courseCode: courseCode
       }
     },
     removeCourse(courseCode){
       const semester = this.semester
-      if(!(semester in this.timeTable)){
+      const calendar = this.calenderApi.getApi().view.calendar
+      if(!(semester in this.timeTable) || !(courseCode in this.timeTable[semester])){
         Notify.create("Unable to remove course")
         return
       }
-      this.timeTable[semester] = this.timeTable[semester].filter((lesson) => lesson.courseCode != courseCode)
-      // remove from preview if preview is the deleted coursecode
-      if(this.preview[semester] && this.preview[semester][0].courseCode == courseCode){
-        this.preview[semester] = []
+      console.log(this.timeTable[semester][courseCode])
+      // remove from calendar
+      for(const eventId of this.timeTable[semester][courseCode]['lecture']){
+        calendar.getEventById(eventId).remove()
       }
-      console.log(semester, courseCode)
-      console.log(this.coursesAdded)
-      const colorUsed = this.coursesAdded[semester][courseCode].bgcolor
+      for(const eventId of this.timeTable[semester][courseCode]['lessons']){
+        calendar.getEventById(eventId).remove()
+      }
+      // remove from preview if preview is the deleted coursecode
+      this.resetPreview()
+
+      const colorUsed = this.coursesAdded[semester][courseCode].backgroundColor
       this.returnColor(colorUsed)
       delete this.coursesAdded[semester][courseCode]
     },
@@ -118,7 +151,7 @@ export const useTimetableStore = defineStore('timetable', {
       const preview = []
       if(schedule){
         for(const [index, indexSchedule] of Object.entries(schedule)){
-          if (index == "lecture" || index == "name" || indexSchedule[0].index == showing.index) continue
+          if (index == "lecture" || index == "courseName" || indexSchedule[0].index == showing.index) continue
           for(const classInfo of indexSchedule){
             preview.push({
               isTemp: true,
@@ -131,7 +164,13 @@ export const useTimetableStore = defineStore('timetable', {
       this.preview[semester] = preview
     },
     resetPreview(){
-      this.preview[this.semester] = []
+      const semester = this.semester
+      if(!(semester in this.preview)) return
+      const calendar = this.calenderApi.getApi().view.calendar
+      for(const eventId of this.preview[semester]){
+        calendar.getEventById(eventId.remove())
+      }
+      this.preview[semester] = []
     },
     returnColor(color){
       this.colors.push(color)

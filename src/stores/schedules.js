@@ -1,48 +1,47 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
-import { parseDate } from '@quasar/quasar-ui-qcalendar/src/QCalendarDay.js'
 const firebaseEndpoint = "http://127.0.0.1:5001/ntu-schedule-maker/asia-east2/app/"
 const Day = {
-	"MON": 1,
-	"TUE": 2,
-	"WED": 3,
-	"THU": 4,
-  "FRI": 5,
-  "SAT": 6,
+	"MON": "1",
+	"TUE": "2",
+	"WED": "3",
+	"THU": "4",
+  "FRI": "5",
+  "SAT": "6",
 }
 const timeDict = {
-   0 : "0800",
-   1 : "0830",
-   2 : "0900",
-   3 : "0930",
-   4 : "1000",
-   5 : "1030",
-   6 : "1100",
-   7 : "1130",
-   8 : "1200",
-   9 : "1230",
-   10 : "1300",
-   11 : "1330",
-   12 : "1400",
-   13 : "1430",
-   14 : "1500",
-   15 : "1530",
-   16 : "1600",
-   17 : "1630",
-   18 : "1700",
-   19 : "1730",
-   20 : "1800",
-   21 : "1830",
-   22 : "1900",
-   23 : "1930",
-   24 : "2000",
-   25 : "2030",
-   26 : "2100",
-   27 : "2130",
-   28 : "2200",
-   29 : "2230",
-   30 : "2300",
-   31 : "2330",
+   0 : "T08:00:00",
+   1 : "T08:30:00",
+   2 : "T09:00:00",
+   3 : "T09:30:00",
+   4 : "T10:00:00",
+   5 : "T10:30:00",
+   6 : "T11:00:00",
+   7 : "T11:30:00",
+   8 : "T12:00:00",
+   9 : "T12:30:00",
+   10 : "T13:00:00",
+   11 : "T13:30:00",
+   12 : "T14:00:00",
+   13 : "T14:30:00",
+   14 : "T15:00:00",
+   15 : "T15:30:00",
+   16 : "T16:00:00",
+   17 : "T16:30:00",
+   18 : "T17:00:00",
+   19 : "T17:30:00",
+   20 : "T18:00:00",
+   21 : "T18:30:00",
+   22 : "T19:00:00",
+   23 : "T19:30:00",
+   24 : "T20:00:00",
+   25 : "T20:30:00",
+   26 : "T21:00:00",
+   27 : "T21:30:00",
+   28 : "T22:00:00",
+   29 : "T22:30:00",
+   30 : "T23:00:00",
+   31 : "T23:30:00",
 };
 
 export const useSchedules = defineStore('schedules', {
@@ -120,11 +119,11 @@ export const useSchedules = defineStore('schedules', {
     // Helper Functions
     // parse schedule to timetable format
     parseSchedule(data){
-      const {schedule, name, courseCode} = data
+      const {schedule, courseName, courseCode} = data
       var result = {}
       var lectureAdded = false
       result["lecture"] = []
-      result["name"] = name
+      result["courseName"] = courseName
       for(const [index, indexSchedule] of Object.entries(schedule)){
         result[index] = []
         for(var i=0; i<indexSchedule.length; i++){
@@ -132,7 +131,8 @@ export const useSchedules = defineStore('schedules', {
           if(lectureAdded && classData.type == "LEC/STUDIO") continue;
           let classInfo = {
             id:  `${courseCode} ${index} ${i}`,
-            name: name,
+            groupid: courseCode,
+            courseName: courseName,
             courseCode: courseCode,
             index: index,
             type: classData.type,
@@ -141,13 +141,11 @@ export const useSchedules = defineStore('schedules', {
             date: this.getCurrentDay(Day[classData.day]),
             weeks: classData.weeks.toString(),
             frequency: this.parseWeeks(classData.weeks),
-            time: this.parseTime(classData.time),
-            duration: this.parseDuration(classData.time),
-            // isTemp: false
-            // TODO: add this in lesson store
-            // bgcolor: 'red',
+            start: this.getCurrentDay(Day[classData.day]) + this.parseStart(classData.time),
+            end: this.getCurrentDay(Day[classData.day]) + this.parseEnd(classData.time),
           }
           if(classData.type == "LEC/STUDIO"){
+            classInfo.groupid = null
             classInfo.index = ""
             classInfo.group = ""
             result["lecture"].push(classInfo)
@@ -174,19 +172,15 @@ export const useSchedules = defineStore('schedules', {
       }
       return "Week " + weekArray.toString()
     },
-    parseTime(timeArray){
+    parseStart(timeArray){
       // convert time array to required format
       return timeDict[timeArray[0]]
     },
-    parseDuration(timeArray){
-      return timeArray.length*30-1
+    parseEnd(timeArray){
+      return timeDict[timeArray[-1]]
     },
     getCurrentDay (day) {
-      const CURRENT_DAY = new Date("2023-05-01")
-      const newDay = new Date(CURRENT_DAY)
-      newDay.setDate(day)
-      const tm = parseDate(newDay)
-      return tm.date
+      return "2023-05-0" + day
     },    
   }
 })

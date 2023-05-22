@@ -2,32 +2,25 @@
   <div class="subcontent">
     <div class="row justify-center">
       <div class="col-12 col-md-10">
-        <FullCalendar :options="calendarOptions"> 
-          <template v-slot:eventContent='arg'>
-          <!-- <b>{{ arg.timeText }}</b> -->
-          <!-- <i>{{ arg.event.title }}</i> -->
-          <div
-            :class="[{'lighten': arg.event.extendedProps.isTemp && !arg.event.extendedProps.isHovered}]"
-            :style="`text-white bg-${ arg.event.extendedProps.bgcolor }`"
-            @mouseover="hoveredIndex = arg.event.extendedProps.index"
-          >
-          {{ arg.event.extendedProps.extendedProps }}
-            <div class="text-left q-pa-xs">
+        <FullCalendar ref="calendar" :options="calendarOptions"> 
+          <template v-slot:eventContent='{event: {extendedProps}}' class="lighten">
+            <div class="text-left q-pa-xs" style="height: 100%;">
                 <div class="text-bold ellipsis">
-                  {{ arg.event.extendedProps.courseCode }} <span >{{ arg.event.extendedProps.name }}</span>
+                  {{ extendedProps.courseCode }} <span >{{ extendedProps.courseName }}</span>
                 </div>
-                <div class="calendar-body-text"> {{ arg.event.extendedProps.index }}</div>
-                <div class="calendar-body-text">{{ arg.event.extendedProps.type }} | {{ arg.event.extendedProps.frequency }}</div>
-              <q-tooltip v-if="!arg.event.extendedProps.isTemp">
-                <div>Type: {{ arg.event.extendedProps.type }}</div>
-                <div v-if="arg.event.extendedProps.index">Index: {{ arg.event.extendedProps.index }}</div>
-                <div v-if="arg.event.extendedProps.group">Group: {{ arg.event.extendedProps.group }}</div>
-                <div>Venue: {{ arg.event.extendedProps.venue }}</div>
-                <div> Weeks: {{ arg.event.extendedProps.weeks }}</div>
+                <div class="calendar-body-text"> {{ extendedProps.index }}</div>
+                <div class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
+              <q-tooltip>
+                <div>{{ extendedProps.courseCode }}</div>
+                <div>{{ extendedProps.courseName }}</div>
+                <div>Type: {{ extendedProps.type }}</div>
+                <div v-if="extendedProps.index">Index: {{ extendedProps.index }}</div>
+                <div v-if="extendedProps.group">Group: {{ extendedProps.group }}</div>
+                <div>Venue: {{ extendedProps.venue }}</div>
+                <div> Weeks: {{ extendedProps.weeks }}</div>
               </q-tooltip>
             </div>
-          </div>
-        </template>
+          </template>
         </FullCalendar>
       </div>
     </div>
@@ -39,7 +32,10 @@ import FullCalendar from '@fullcalendar/vue3'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { INITIAL_EVENTS, createEventId } from '@/composables/event-utils'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useTimetableStore } from '../stores/timetable'
+const timetableStore = useTimetableStore()
+const calendar = ref(null);
 
 const calendarOptions = ref({
   plugins: [
@@ -56,7 +52,7 @@ const calendarOptions = ref({
   dayHeaderFormat: { weekday: 'short' },
   initialDate: new Date("2023-05-01"),
   initialView: 'timeGridSixDay',
-  initialEvents: INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
+  initialEvents: [], // alternatively, use the `events` setting to fetch from a feed
   slotMinTime: "08:30:00",
   slotMaxTime: "23:00:00",
   allDaySlot: false,
@@ -65,13 +61,16 @@ const calendarOptions = ref({
   selectMirror: true,
   dayMaxEvents: true,
   select: handleDateSelect,
-  eventClick: handleEventClick,
   eventsSet: handleEvents,
   eventMouseEnter: handleMouseEnter,
   eventMouseLeave: handleMouseLeave,
 })
 
 const currentEvents = ref(null)
+
+onMounted(() => {
+  timetableStore.setCalendarApi(calendar)
+})
 
 function handleDateSelect(selectInfo) {
   let title = prompt('Please enter a new title for your event')
@@ -89,7 +88,9 @@ function handleDateSelect(selectInfo) {
     })
   }
 }
-
+function test(){
+  console.log("fired")
+}
 function handleEventClick(clickInfo) {
   console.log("clicked", clickInfo)
   // if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
@@ -100,19 +101,15 @@ function handleEvents(events) {
   currentEvents.value = events
 }
 function handleMouseEnter(mouseEnterInfo){
-  let calendarApi = mouseEnterInfo.view.calendar
-
-  const groupEvents = calendarApi.getEvents().filter((e) => e.groupId == mouseEnterInfo.event.groupId)
-  for(const event of groupEvents){
-    event.setProp( "className", [] )
+  let event = mouseEnterInfo.event
+  if(event.extendedProps.isTemp){
+    event.setProp( "classNames", ['no-lighten'])
   }
 }
 function handleMouseLeave(mouseLeaveInfo){
-  let calendarApi = mouseLeaveInfo.view.calendar
-
-  const groupEvents = calendarApi.getEvents().filter((e) => e.groupId == mouseLeaveInfo.event.groupId)
-  for(const event of groupEvents){
-    event.setProp( "className", ['lighten'] )
+  let event = mouseLeaveInfo.event
+  if(event.extendedProps.isTemp){
+    event.setProp( "classNames", ['lighten'] )
   }
 }
 </script>
@@ -125,13 +122,15 @@ function handleMouseLeave(mouseLeaveInfo){
   white-space: nowrap;
   font-size: 10px;
 }
+</style>
 
+<style>
 .lighten{
   filter: brightness(0.7);
+  transition: filter .1s linear;
 }
-
-.lighten:hover{
-  filter: brightness(1)
+.no-lighten{
+  filter: brightness(1);
+  transition: filter .1s linear;
 }
-
 </style>
