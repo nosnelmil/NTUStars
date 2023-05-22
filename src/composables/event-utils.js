@@ -20,7 +20,7 @@ export const INITIAL_EVENTS = [
     backgroundColor: '#5C6BC0',
     borderColor: 'red',
     textColor: 'white',
-    isTemp: false,
+    isPreview: false,
     classNames: []
   },
   {
@@ -41,7 +41,7 @@ export const INITIAL_EVENTS = [
     backgroundColor: 'red',
     borderColor: 'red',
     textColor: 'white',
-    isTemp: true,
+    isPreview: true,
     classNames: ['lighten']
   },
 ]

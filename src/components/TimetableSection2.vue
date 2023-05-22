@@ -20,7 +20,7 @@
                 v-for="lesson in lessonsMap[timestamp.date]" 
                 :key="lesson.id">
                 <q-badge
-                    v-if="!lesson.isTemp"
+                    v-if="!lesson.isPreview"
                     :class="badgeClasses(lesson, 'header')"
                     :style="badgeStyles(lesson, 'header')"
                     style="width: 10px; cursor: pointer; height: 12px; font-size: 10px; margin: 1px;"
@@ -40,9 +40,9 @@
                 <div
                   v-if="lesson.time !== undefined"
                   class="my-lesson"
-                  :class="[{'lighten': lesson.isTemp}, lesson.class]"
+                  :class="[{'lighten': lesson.isPreview}, lesson.class]"
                   :style="Object.assign({}, badgeStyles(lesson, 'body', timeStartPos, timeDurationHeight), lesson.style)"
-                  @click="handleLessonClick(lesson, lesson.isTemp)"
+                  @click="handleLessonClick(lesson, lesson.isPreview)"
                   @mouseover="hoveredIndex = lesson.index" @mouseleave="hoveredIndex = null"
                 >
                   <div class="text-left q-pa-xs">
@@ -51,7 +51,7 @@
                       </div>
                       <div class="calendar-body-text"> {{ lesson.index }}</div>
                       <div class="calendar-body-text">{{ lesson.type }} | {{ lesson.frequency }}</div>
-                    <q-tooltip v-if="!lesson.isTemp">
+                    <q-tooltip v-if="!lesson.isPreview">
                       <div>Type: {{ lesson.type }}</div>
                       <div v-if="lesson.index">Index: {{ lesson.index }}</div>
                       <div v-if="lesson.group">Group: {{ lesson.group }}</div>
@@ -90,7 +90,7 @@ const lessons = timetableStore.getLessons
 const showingPreview = ref(null)
 const hoveredIndex = ref(null)
 
-function handleLessonClick(lesson, isTemp){
+function handleLessonClick(lesson, isPreview){
   // if temp, swap showing index
   if(showingPreview.value == lesson.courseCode){
     timetableStore.resetPreview()
@@ -103,7 +103,6 @@ function handleLessonClick(lesson, isTemp){
 
 // convert the lessons into a map of lists keyed by date 
 watch(() => timetableStore.getLessons, (newLessons,) => {
-  console.log("called")
   const clone = newLessons.map(a=> {return {...a}})
   const map = {}
   // this.lessons.forEach(lesson => (map[ lesson.date ] = map[ lesson.date ] || []).push(lesson))
@@ -136,7 +135,6 @@ function badgeStyles (lesson, type, timeStartPos = undefined, timeDurationHeight
   return s
 }
 function getEvents (dt) {
-  console.log("getevent called")
   // get all lessons for the specified date
   const lessons = lessonsMap.value[ dt ] || []
   const groups = groupClashedLessons(lessons)
