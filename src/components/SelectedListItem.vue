@@ -7,6 +7,9 @@
     <q-item-label caption lines="1">
       {{course.courseName}}
     </q-item-label>
+    <q-item-label caption lines="1">
+      Index: {{course.index}}
+    </q-item-label>
   
   </q-item-section>
 
