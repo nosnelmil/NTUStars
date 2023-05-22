@@ -48,7 +48,8 @@ export const useSchedules = defineStore('schedules', {
   state: () => {
     return {
       schedules: {},
-      isLoading: false
+      isLoading: false,
+      semesters: {}
     }
   },
   getters: {
@@ -61,6 +62,8 @@ export const useSchedules = defineStore('schedules', {
         return null
       }
     },
+    getSemesters: (state) => Object.entries(state.semesters).map(([key,value]) => { return ({label: value, value: key})})
+    
   },
   actions: {
     async findCourseSchedule(semester, code){
@@ -106,7 +109,33 @@ export const useSchedules = defineStore('schedules', {
 
       }
     },
-
+    async findSemesters(){
+      // get from database
+      if(Object.keys(this.semesters) >0) return
+      try{
+        const response = await fetch(
+          firebaseEndpoint + "get-semesters",
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
+        const data = await response.json()
+        if(data.success){
+          this.semesters = data.semesters
+        }else{
+          // error
+          Notify.create({
+            message: `Failed to retrieve semesters`,
+            color: 'negative'
+          })
+        }
+      }catch(e){
+        Notify.create({
+          message: `Error retrieving semesters`,
+          color: 'negative'
+        })
+      }
+    },
     // schedules: {
     //   sem: {
     //     <courseCode>: {
@@ -131,7 +160,7 @@ export const useSchedules = defineStore('schedules', {
           if(lectureAdded && classData.type == "LEC/STUDIO") continue;
           let classInfo = {
             id:  `${courseCode} ${index} ${i}`,
-            groupid: courseCode,
+            groupid: courseCode+index,
             courseName: courseName,
             courseCode: courseCode,
             index: index,
