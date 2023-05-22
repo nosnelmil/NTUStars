@@ -187,7 +187,6 @@ function getEvents (dt) {
 .lighten
   filter: brightness(0.7)
 
-.lighten:hover
-  filter: brightness(1)
+
 
 </style>

@@ -19,7 +19,7 @@
     <!-- <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered mini>
     </q-drawer> -->
 
-    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered class="col items-start" overlay>
+    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered class="col items-start" > 
       <div class="row justify-center q-mt-lg q-mb-md">
         <SearchBar/>
       </div>
