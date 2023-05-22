@@ -19,14 +19,17 @@ export const useTimetableStore = defineStore('timetable', {
   
   getters: {
     getColor: (state) =>  {
-      console.log("colors", state.colors)
       return state.colors.pop()
     },
     getTimeTable: (state) => {
       return state.timeTable[state.semester]
     },
-    getPreview: (state) => {
-      return state.preview[state.semester]
+    getCourseCodeShowingPreview: (state) => {
+      if(state.semester in state.preview){
+        return state.preview[state.semester].length > 0
+          ? state.preview[state.semester][0].courseCode
+          : null
+      }
     },
     getCoursesAdded: (state) => {
       return {...state.coursesAdded[state.semester]}
@@ -36,12 +39,11 @@ export const useTimetableStore = defineStore('timetable', {
   actions: {
     setCalendarApi(calenderApi){
       this.calenderApi = calenderApi
-      console.log(this.calenderApi)
     },
-
     async addCourse(code){
       const courseCode = code.toUpperCase()
       const semester = this.semester
+      const calendar = this.calenderApi.getApi().view.calendar
       // check if already in timetable
       if(semester in this.coursesAdded && courseCode in this.coursesAdded[semester]){
         Notify.create({message: "Course already in timetable!", color: "negative"})
@@ -77,15 +79,7 @@ export const useTimetableStore = defineStore('timetable', {
 
       // add the lecture slots for this course
       for(const classInfo of schedule["lecture"]){
-        this.calenderApi.getApi().view.calendar.addEvent({
-          editable: false,
-          classNames: [],
-          isTemp: false,
-          backgroundColor: backgroundColor,
-          borderColor: backgroundColor,
-          textColor: 'white',
-          ...classInfo
-        })
+        calendar.addEvent(addTimetableProp(classInfo,false,backgroundColor))
         this.timeTable[semester][courseCode]["lecture"].push(classInfo.id)
       }
 
@@ -94,16 +88,7 @@ export const useTimetableStore = defineStore('timetable', {
       for(const [index, indexSchedule] of Object.entries(schedule)){
         if(index == "lecture" || index == "courseName") continue
         for(const classInfo of indexSchedule){
-          this.calenderApi.getApi().view.calendar.addEvent({
-            editable: false,
-            classNames: [],
-            isTemp: false,
-            backgroundColor: backgroundColor,
-            borderColor: backgroundColor,
-            textColor: 'white',
-            backgroundColor: backgroundColor,
-            ...classInfo
-          })
+          calendar.addEvent(addTimetableProp(classInfo,false,backgroundColor))
           this.timeTable[semester][courseCode]["lessons"].push(classInfo.id)
         }
         addedIndex = index
@@ -126,7 +111,6 @@ export const useTimetableStore = defineStore('timetable', {
         Notify.create("Unable to remove course")
         return
       }
-      console.log(this.timeTable[semester][courseCode])
       // remove from calendar
       for(const eventId of this.timeTable[semester][courseCode]['lecture']){
         calendar.getEventById(eventId).remove()
@@ -142,22 +126,20 @@ export const useTimetableStore = defineStore('timetable', {
       delete this.coursesAdded[semester][courseCode]
     },
     async setPreview(courseCode){
-      console.log("entered set preview")
       const scheduleStore = useSchedules()
       const semester = this.semester
+      const calendar = this.calenderApi.getApi().view.calendar
       const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
-      console.log("schedule", schedule)
       const showing = this.coursesAdded[semester][courseCode]
       const preview = []
+      this.resetPreview()
       if(schedule){
         for(const [index, indexSchedule] of Object.entries(schedule)){
           if (index == "lecture" || index == "courseName" || indexSchedule[0].index == showing.index) continue
           for(const classInfo of indexSchedule){
-            preview.push({
-              isTemp: true,
-              bgcolor: showing.bgcolor,
-              ...classInfo
-            })
+            const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
+            preview.push(previewEvent)
+            calendar.addEvent(previewEvent)
           }
         }
       }
@@ -167,10 +149,41 @@ export const useTimetableStore = defineStore('timetable', {
       const semester = this.semester
       if(!(semester in this.preview)) return
       const calendar = this.calenderApi.getApi().view.calendar
-      for(const eventId of this.preview[semester]){
-        calendar.getEventById(eventId.remove())
+      for(const event of this.preview[semester]){
+        calendar.getEventById(event.id).remove()
       }
       this.preview[semester] = []
+    },
+    swapIndex(courseCode, newIndex){
+      const semester = this.semester
+      const calendar = this.calenderApi.getApi().view.calendar
+      // get event object of newIndex
+      const newLessons = this.preview[semester].filter(e => e.index == newIndex)
+      // remove preview
+      this.resetPreview()
+      // reset preview properties
+      newLessons.forEach(e => {
+        e.isPreview = false
+        e.classNames = ['lesson-body']
+        e.groupId = null
+      })
+      // remove oldIndex
+      for (const eventId of this.timeTable[semester][courseCode]['lessons']){
+        calendar.getEventById(eventId).remove()
+      }
+      // add back to calendar
+      const newEventIds = []
+      for (const event of newLessons){
+        calendar.addEvent(event)
+        newEventIds.push(event.id)
+      }
+      this.timeTable[semester][courseCode]['lessons'] = newEventIds
+      // update added course index
+      this.coursesAdded[semester][courseCode].index = newIndex
+    },
+    resize(){
+      if(!this.calenderApi) return
+      this.calenderApi.getApi().view.calendar.updateSize()
     },
     returnColor(color){
       this.colors.push(color)
@@ -184,3 +197,16 @@ export const useTimetableStore = defineStore('timetable', {
     },    
   }
 })
+
+function addTimetableProp(classInfo, isPreview, color){
+  return ({
+    groupId: isPreview ? classInfo.courseCode+classInfo.index : null,
+    editable: false,
+    classNames: ['lesson-body'].concat(isPreview?['lighten']:[]),
+    isPreview: isPreview,
+    backgroundColor: color,
+    borderColor: color,
+    textColor: 'white',
+    ...classInfo
+  })
+}
