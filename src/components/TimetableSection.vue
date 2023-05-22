@@ -1,7 +1,7 @@
 <template>
   <div class="subcontent">
     <div class="row justify-center">
-      <div class="col-12 col-md-10">
+      <div class="col-12 col-md-10 q-py-xs" style="max-height: 90vh;overflow-y: scroll;">
         <FullCalendar ref="calendar" :options="calendarOptions"> 
           <template v-slot:eventContent='{event: {extendedProps}}' class="lighten">
             <div class="text-left q-pa-xs" style="height: 100%;">
@@ -10,7 +10,7 @@
                 </div>
                 <div class="calendar-body-text"> {{ extendedProps.index }}</div>
                 <div class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
-              <q-tooltip>
+              <q-tooltip v-if="!extendedProps.isPreview">
                 <div>{{ extendedProps.courseCode }}</div>
                 <div>{{ extendedProps.courseName }}</div>
                 <div>Type: {{ extendedProps.type }}</div>
@@ -49,12 +49,14 @@ const calendarOptions = ref({
       duration: { days:6 }
     }
   },
+  height: 1000,
+  expandRows: true,
   dayHeaderFormat: { weekday: 'short' },
   initialDate: new Date("2023-05-01"),
   initialView: 'timeGridSixDay',
   initialEvents: [], // alternatively, use the `events` setting to fetch from a feed
-  slotMinTime: "08:30:00",
-  slotMaxTime: "23:00:00",
+  slotMinTime: "08:00:00",
+  slotMaxTime: "23:30:00",
   allDaySlot: false,
   editable: true,
   selectable: true,
@@ -64,6 +66,7 @@ const calendarOptions = ref({
   eventsSet: handleEvents,
   eventMouseEnter: handleMouseEnter,
   eventMouseLeave: handleMouseLeave,
+  eventClick: handleEventClick,
 })
 
 const currentEvents = ref(null)
@@ -81,35 +84,59 @@ function handleDateSelect(selectInfo) {
   if (title) {
     calendarApi.addEvent({
       id: createEventId(),
-      title,
+      groupId: "group2",
+      editable: false,
+      courseName: 'Software engineering',
+      courseCode: "SC2006",
+      index: "10523",
+      type: "TUT",
+      group: "A21",
+      venue: "venue",
+      date: "2023-05-02",
+      weeks: "1,2,3,4,566,4,6,4",
+      frequency: "Every Week",
+      backgroundColor: '#5C6BC0',
+      borderColor: 'red',
+      textColor: 'white',
+      isPreview: false,
+      classNames: [],
       start: selectInfo.startStr,
       end: selectInfo.endStr,
-      allDay: selectInfo.allDay
     })
   }
 }
-function test(){
-  console.log("fired")
-}
+
 function handleEventClick(clickInfo) {
-  console.log("clicked", clickInfo)
-  // if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-  //   clickInfo.event.remove()
-  // }
+  const event = clickInfo.event
+  const courseCode = event.extendedProps.courseCode
+
+  if(event.extendedProps.isPreview){
+    // swap index
+    const index = event.extendedProps.index
+    timetableStore.swapIndex(courseCode, index)
+    return
+  }
+    
+  if(timetableStore.getCourseCodeShowingPreview == courseCode){
+    timetableStore.resetPreview()
+  }else{
+    timetableStore.setPreview(courseCode)
+  }
+  
 }
 function handleEvents(events) {
   currentEvents.value = events
 }
 function handleMouseEnter(mouseEnterInfo){
   let event = mouseEnterInfo.event
-  if(event.extendedProps.isTemp){
-    event.setProp( "classNames", ['no-lighten'])
+  if(event.extendedProps.isPreview){
+    event.setProp( "classNames", ['lesson-body','no-lighten'])
   }
 }
 function handleMouseLeave(mouseLeaveInfo){
   let event = mouseLeaveInfo.event
-  if(event.extendedProps.isTemp){
-    event.setProp( "classNames", ['lighten'] )
+  if(event.extendedProps.isPreview){
+    event.setProp( "classNames", ['lesson-body','lighten'] )
   }
 }
 </script>
@@ -132,5 +159,16 @@ function handleMouseLeave(mouseLeaveInfo){
 .no-lighten{
   filter: brightness(1);
   transition: filter .1s linear;
+}
+.lesson-body{
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  box-shadow: 0px;
+  top: 0px;
+}
+.lesson-body:hover{
+  box-shadow: 0px 4px 8px rgba(38, 38, 38, 0.2);
+  top: -4px;
+  border: 1px solid #cccccc;
 }
 </style>
