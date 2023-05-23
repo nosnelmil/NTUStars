@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { useSchedules } from './schedules'
-import { parseDate } from '@quasar/quasar-ui-qcalendar/src/QCalendarDay.js'
-import { Notify, event } from 'quasar';
-import { markRaw } from 'vue';
+import { Notify } from 'quasar';
+
 
 export const useTimetableStore = defineStore('timetable', {
   state: () => {
@@ -13,7 +12,7 @@ export const useTimetableStore = defineStore('timetable', {
       timeTable: {}, // the one thats showing on the screen
       colors: ['#EF5350', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#78909C'],
       isLoading: false,
-      semester: "2022;2",
+      semester: null,
     }
   },
   
@@ -33,6 +32,20 @@ export const useTimetableStore = defineStore('timetable', {
     },
     getCoursesAdded: (state) => {
       return {...state.coursesAdded[state.semester]}
+    },
+    getSemester: (state) => {
+      return state.semester
+    },
+    getSemShortName: (state) =>{
+      if(state.semester){
+        if(state.semester.at(-1) == "S"){
+          return state.semester.replace(";S", " Special Sem")
+        }else{
+          return state.semester.replace(";", " Sem ")
+        }
+      }else{
+        return "Select Semester"
+      }
     }
   },
   
@@ -180,6 +193,18 @@ export const useTimetableStore = defineStore('timetable', {
       this.timeTable[semester][courseCode]['lessons'] = newEventIds
       // update added course index
       this.coursesAdded[semester][courseCode].index = newIndex
+    },
+    setSemester(semesterKey){
+      this.semester = semesterKey
+    },
+    reset(){
+      const calenderApi = this.calenderApi
+      const events = this.calenderApi.getApi().view.calendar.getEvents()
+      for(const event of events){
+        event.remove()
+      }
+      this.$reset()
+      this.setCalendarApi(calenderApi)
     },
     resize(){
       if(!this.calenderApi) return
