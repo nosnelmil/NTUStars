@@ -2,12 +2,15 @@
 <q-item clickable v-ripple>
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
-      <span class="text-weight-medium">{{course.courseCode}}</span><div class="q-ml-xs color-cube" :style="{backgroundColor: course.backgroundColor}"></div>
+      <span class="text-weight-medium text-uppercase">
+        {{course.courseCode}}
+      </span>
+      <div class="q-ml-xs color-cube" :style="{backgroundColor: course.backgroundColor}"></div>
     </q-item-label>
     <q-item-label caption lines="1">
       {{course.courseName}}
     </q-item-label>
-    <q-item-label caption lines="1">
+    <q-item-label v-if="course.index" caption lines="1">
       Index: {{course.index}}
     </q-item-label>
   

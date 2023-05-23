@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useSchedules } from './schedules'
 import { Notify } from 'quasar';
+import { createEventId } from '../composables/event-utils';
 
 
 export const useTimetableStore = defineStore('timetable', {
@@ -117,6 +118,48 @@ export const useTimetableStore = defineStore('timetable', {
         courseCode: courseCode
       }
     },
+    addCustomEvent(selectInfo, name){
+      const semester = this.semester
+      const calendar = this.calenderApi.getApi().view.calendar
+      // Add to custom events if needed
+      let color
+      if(!(semester in this.timeTable)){
+        this.timeTable[semester] = {}
+      }
+      if(!("custom" in this.timeTable[semester]) || !this.timeTable[semester]["custom"]){
+        this.timeTable[semester]["custom"] = []
+        if(!(semester in this.coursesAdded)) this.coursesAdded[semester] = {}
+        this.coursesAdded[semester]["custom"] = {
+          isLoading: true,
+          courseCode: "custom",
+          courseName: "Custom Events",
+          index: "",
+          backgroundColor: "",
+        }
+        color = this.getColor
+      } 
+      else{
+        color = this.coursesAdded[semester]["custom"].backgroundColor
+      }
+      // Add event to calendar
+      const classInfo = {
+        id: createEventId()+name,
+        courseName: name,
+        start: selectInfo.startStr,
+        end: selectInfo.endStr,
+        isCustom: true,
+      }
+      classInfo.editable = true
+      const event = addTimetableProp(classInfo, false, color)
+      console.log("test", event)
+      
+      // save event to timetable & coursesAdded
+      this.timeTable[semester]["custom"].push(event.id)
+      this.coursesAdded[semester]["custom"].isLoading = false
+      this.coursesAdded[semester]["custom"].backgroundColor = color
+      calendar.addEvent(event)
+      
+    },
     removeCourse(courseCode){
       const semester = this.semester
       const calendar = this.calenderApi.getApi().view.calendar
@@ -125,11 +168,17 @@ export const useTimetableStore = defineStore('timetable', {
         return
       }
       // remove from calendar
-      for(const eventId of this.timeTable[semester][courseCode]['lecture']){
-        calendar.getEventById(eventId).remove()
-      }
-      for(const eventId of this.timeTable[semester][courseCode]['lessons']){
-        calendar.getEventById(eventId).remove()
+      if(courseCode != "custom"){
+        for(const eventId of this.timeTable[semester][courseCode]['lecture']){
+          calendar.getEventById(eventId).remove()
+        }
+        for(const eventId of this.timeTable[semester][courseCode]['lessons']){
+          calendar.getEventById(eventId).remove()
+        }
+      }else{
+        for(const eventId of this.timeTable[semester][courseCode]){
+          calendar.getEventById(eventId).remove()
+        }
       }
       // remove from preview if preview is the deleted coursecode
       this.resetPreview()

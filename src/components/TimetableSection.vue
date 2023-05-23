@@ -9,15 +9,15 @@
                   {{ extendedProps.courseCode }} <span >{{ extendedProps.courseName }}</span>
                 </div>
                 <div class="calendar-body-text"> {{ extendedProps.index }}</div>
-                <div class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
-              <q-tooltip v-if="!extendedProps.isPreview">
+                <div v-if="extendedProps.type" class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
+              <q-tooltip v-if="!extendedProps.isPreview && !(Object.keys(extendedProps).length == 0)">
                 <div>{{ extendedProps.courseCode }}</div>
                 <div>{{ extendedProps.courseName }}</div>
-                <div>Type: {{ extendedProps.type }}</div>
-                <div v-if="extendedProps.index">Index: {{ extendedProps.index }}</div>
-                <div v-if="extendedProps.group">Group: {{ extendedProps.group }}</div>
-                <div>Venue: {{ extendedProps.venue }}</div>
-                <div> Weeks: {{ extendedProps.weeks }}</div>
+                <div v-if="extendedProps.type"> Type: {{ extendedProps.type }}</div>
+                <div v-if="extendedProps.index"> Index: {{ extendedProps.index }}</div>
+                <div v-if="extendedProps.group"> Group: {{ extendedProps.group }}</div>
+                <div v-if="extendedProps.venue">Venue: {{ extendedProps.venue }}</div>
+                <div v-if="extendedProps.weeks"> Weeks: {{ extendedProps.weeks }}</div>
               </q-tooltip>
             </div>
           </template>
@@ -34,8 +34,11 @@ import interactionPlugin from '@fullcalendar/interaction'
 import { INITIAL_EVENTS, createEventId } from '@/composables/event-utils'
 import { onMounted, ref } from 'vue'
 import { useTimetableStore } from '../stores/timetable'
+import { useQuasar } from 'quasar'
+import EventFormDialog from './EventFormDialog.vue'
 const timetableStore = useTimetableStore()
-const calendar = ref(null);
+const calendar = ref(null)
+const $q = useQuasar()
 
 const calendarOptions = ref({
   plugins: [
@@ -76,34 +79,25 @@ onMounted(() => {
 })
 
 function handleDateSelect(selectInfo) {
-  let title = prompt('Please enter a new title for your event')
   let calendarApi = selectInfo.view.calendar
-
-  calendarApi.unselect() // clear date selection
-
-  if (title) {
-    calendarApi.addEvent({
-      id: createEventId(),
-      groupId: "group2",
-      editable: false,
-      courseName: 'Software engineering',
-      courseCode: "SC2006",
-      index: "10523",
-      type: "TUT",
-      group: "A21",
-      venue: "venue",
-      date: "2023-05-02",
-      weeks: "1,2,3,4,566,4,6,4",
-      frequency: "Every Week",
-      backgroundColor: '#5C6BC0',
-      borderColor: 'red',
-      textColor: 'white',
-      isPreview: false,
-      classNames: [],
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
+  if(!timetableStore.getSemester){
+    calendarApi.unselect() 
+    $q.notify({
+      type: "negative",
+      message: 'Please select a semester!'
     })
+    return
   }
+  $q.dialog({
+    component: EventFormDialog,
+    componentProps:{},
+    persistent: true
+  }).onOk(data => {
+  
+    calendarApi.unselect() // clear date selection
+  
+    timetableStore.addCustomEvent(selectInfo, data.name)
+  })
 }
 
 function handleEventClick(clickInfo) {
