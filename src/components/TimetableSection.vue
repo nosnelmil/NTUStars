@@ -31,7 +31,6 @@
 import FullCalendar from '@fullcalendar/vue3'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { INITIAL_EVENTS, createEventId } from '@/composables/event-utils'
 import { onMounted, ref } from 'vue'
 import { useTimetableStore } from '../stores/timetable'
 import { useQuasar } from 'quasar'
@@ -103,6 +102,24 @@ function handleDateSelect(selectInfo) {
 function handleEventClick(clickInfo) {
   const event = clickInfo.event
   const courseCode = event.extendedProps.courseCode
+  if(event.extendedProps.isCustom){
+    $q.dialog({
+      title: 'Edit Event Name',
+      message: 'Edit Name',
+      prompt: {
+        model: event.extendedProps.courseName,
+        type: 'text' // optional
+      },
+      cancel: true,
+      persistent: true
+    }).onOk(data => {
+      event.setExtendedProp("courseName", data)
+    }).onCancel(() => {
+      // console.log('>>>> Cancel')
+    }).onDismiss(() => {
+      // console.log('I am triggered on both OK and Cancel')
+    })
+  }
 
   if(event.extendedProps.isPreview){
     // swap index
