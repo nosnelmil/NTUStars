@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
-const firebaseEndpoint = "http://127.0.0.1:5001/ntu-schedule-maker/asia-east2/app/"
+const firebaseEndpoint = "https://asia-east1-ntu-schedule-maker.cloudfunctions.net/app/"
 const Day = {
 	"MON": "1",
 	"TUE": "2",
@@ -102,7 +102,7 @@ export const useSchedules = defineStore('schedules', {
           }
         }catch(e){
           Notify.create({
-            message: `Error retrieving ${courseCode} schedule for sem ${semester}`,
+            message: `${courseCode} does not exist for sem ${semester}`,
             color: 'negative'
           })
         }
