@@ -126,7 +126,7 @@ export const useTimetableStore = defineStore('timetable', {
       if(!(semester in this.timeTable)){
         this.timeTable[semester] = {}
       }
-      if(!("custom" in this.timeTable[semester]) || !this.timeTable[semester]["custom"]){
+      if(!("custom" in this.timeTable[semester]) || !this.timeTable[semester]["custom"].length){
         this.timeTable[semester]["custom"] = []
         if(!(semester in this.coursesAdded)) this.coursesAdded[semester] = {}
         this.coursesAdded[semester]["custom"] = {
@@ -144,6 +144,7 @@ export const useTimetableStore = defineStore('timetable', {
       // Add event to calendar
       const classInfo = {
         id: createEventId()+name,
+        groupId: createEventId()+name,
         courseName: name,
         start: selectInfo.startStr,
         end: selectInfo.endStr,
@@ -168,16 +169,23 @@ export const useTimetableStore = defineStore('timetable', {
       }
       // remove from calendar
       if(courseCode != "custom"){
-        for(const eventId of this.timeTable[semester][courseCode]['lecture']){
-          calendar.getEventById(eventId).remove()
+        if('lecture' in this.timeTable[semester][courseCode]){
+          for(const eventId of this.timeTable[semester][courseCode]['lecture']){
+            calendar.getEventById(eventId).remove()
+          }
+          this.timeTable[semester][courseCode]['lecture'] = {}
         }
-        for(const eventId of this.timeTable[semester][courseCode]['lessons']){
-          calendar.getEventById(eventId).remove()
+        if('lessons' in this.timeTable[semester][courseCode]){
+          for(const eventId of this.timeTable[semester][courseCode]['lessons']){
+            calendar.getEventById(eventId).remove()
+          }
+          this.timeTable[semester][courseCode]['lessons'] = {}
         }
       }else{
         for(const eventId of this.timeTable[semester][courseCode]){
           calendar.getEventById(eventId).remove()
         }
+        this.timeTable[semester][courseCode] = []
       }
       // remove from preview if preview is the deleted coursecode
       this.resetPreview()
