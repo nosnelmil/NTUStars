@@ -151,7 +151,6 @@ export const useTimetableStore = defineStore('timetable', {
       }
       classInfo.editable = true
       const event = addTimetableProp(classInfo, false, color)
-      console.log("test", event)
       
       // save event to timetable & coursesAdded
       this.timeTable[semester]["custom"].push(event.id)
