@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="">
     <q-stepper
       v-model="step"
       ref="stepper"
@@ -9,12 +9,11 @@
     >
       <q-step
         :name="1"
-        title="Select Semester"
+        :title="title"
         :done="step > 1"
       >
-        <q-select v-model="model" :options="schedulesStore.getSemesters" filled label="Semesters" />
+        <SelectSemBar :is-error="!isSemSelected"/>
       </q-step>
-
       <q-step
         :name="2"
         title=""
@@ -26,11 +25,10 @@
         <q-separator spaced />
         <SelectedList />
       </q-step>
-
       <template v-slot:navigation>
         <q-stepper-navigation>
-          <q-btn v-if="step == 1" @click="$refs.stepper.next()" color="primary" label="Continue" />
-          <q-btn v-if="step > 1" flat color="primary" @click="$refs.stepper.previous()" label="Back" class="q-ml-sm" />
+          <q-btn v-if="step == 1" @click="handleStepIncrease" color="primary" label="Continue" />
+          <q-btn v-if="step > 1" flat color="primary" @click="handleStepDecrease" label="Back" class="q-ml-sm" />
         </q-stepper-navigation>
       </template>
     </q-stepper>
@@ -38,19 +36,39 @@
 </template>
 
 <script setup>
-import { ref, onMounted} from 'vue'
+import { ref ,computed } from 'vue'
 import SearchBar from './SearchBar.vue';
 import SelectedList from './SelectedList.vue';
-import { useSchedules } from '../stores/schedules';
+import SelectSemBar from './SelectSemBar.vue';
+import { useTimetableStore } from '../stores/timetable';
+import { Dialog } from 'quasar';
 
-const schedulesStore = useSchedules()
+
+const isSemSelected = ref(true)
+const timetableStore = useTimetableStore()
 const step = ref(1)
-const model = ref(null)
-const options = schedulesStore.getSemesters
-const isLoadingSems = ref(true)
-onMounted(async () => {
-  isLoadingSems.value = true
-  schedulesStore.findSemesters()
-  isLoadingSems.value = false
-})
+const stepper = ref(null)
+const title = computed(() => timetableStore.getSemShortName)
+
+function handleStepIncrease() {
+  if(timetableStore.getSemester != null){
+    isSemSelected.value = true
+    stepper.value.next()
+
+  }else{
+    isSemSelected.value = false
+  }
+}
+function handleStepDecrease() {
+  Dialog.create({
+    title: 'Reset Timetable',
+    message: 'Going back will reset your timetable.',
+    cancel: true,
+    persistent: true
+  }).onOk(() => {
+    timetableStore.reset()
+    stepper.value.previous()
+  })
+}
+
 </script>
