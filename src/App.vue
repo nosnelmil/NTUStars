@@ -12,6 +12,13 @@
           Title
         </q-toolbar-title>
 
+        <q-toggle
+          v-model="darkMode"
+          checked-icon="cresent"
+          color="dark"
+          unchecked-icon="dark"
+          @update:model-value="toggleDarkMode"
+        />
         <q-btn dense flat round icon="menu" @click="toggleRightDrawer" />
       </q-toolbar>
     </q-header>
@@ -50,11 +57,16 @@ import SearchBar from './components/SearchBar.vue'
 import SelectedList from './components/SelectedList.vue';
 import { useTimetableStore } from './stores/timetable';
 import DrawerStepper from './components/DrawerStepper.vue';
+import { useQuasar } from 'quasar'
 
 const rightDrawerOpen = ref(false)
-
+const $q = useQuasar()
+const darkMode = ref($q.dark.isActive)
 function toggleRightDrawer () {
   rightDrawerOpen.value = !rightDrawerOpen.value
+}
+function toggleDarkMode(){
+  $q.dark.toggle()
 }
 
 </script>
