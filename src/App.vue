@@ -5,11 +5,11 @@
       <q-toolbar>
         <!-- <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" /> -->
 
-        <q-toolbar-title>
-          <q-avatar>
+        <q-toolbar-title class="brand-font">
+          <q-avatar class="q-mb-xs">
             <img :src="NTUStarsIcon">
           </q-avatar>
-          NTU Stars
+            NTU Stars
         </q-toolbar-title>
 
         <!-- <q-toggle
