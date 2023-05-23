@@ -1,5 +1,5 @@
 <template>
-<q-item>
+<q-item clickable v-ripple>
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
       <span class="text-weight-medium">{{course.courseCode}}</span><div class="q-ml-xs color-cube" :style="{backgroundColor: course.backgroundColor}"></div>
@@ -13,7 +13,7 @@
   
   </q-item-section>
 
-  <q-item-section top side>
+  <q-item-section side>
     <div class="text-grey-8 q-gutter-xs" v-if="course.isLoading">
       <q-spinner
         color="primary"

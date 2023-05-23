@@ -11,7 +11,7 @@
         filled
         :loading="isLoading"
         placeholder="Search"
-        hint="Try searching SC1006"
+        hint="Try searching SC1005"
       >
         <template v-slot:append>
           <q-icon name="search" />
