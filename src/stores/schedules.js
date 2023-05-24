@@ -206,7 +206,7 @@ export const useSchedules = defineStore('schedules', {
       return timeDict[timeArray[0]]
     },
     parseEnd(timeArray){
-      return timeDict[timeArray[-1]]
+      return timeDict[timeArray[timeArray.length-1]+1]
     },
     getCurrentDay (day) {
       return "2023-05-0" + day

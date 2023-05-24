@@ -7,6 +7,7 @@
     @filter="filterFn"
     @update:model-value="handleSemSelect"
     :error="isError"
+    :hint="isLoadingSems ? 'Retrieving available semesters from NTU...' : 'Available semesters are from NTU'"
   >
     <template v-slot:no-option>
       <q-item>
@@ -34,9 +35,11 @@ async function filterFn(val, update, abort){
     update()
     return
   }
+  isLoadingSems.value = true
   await schedulesStore.findSemesters()
   update(() => {
     options.value = schedulesStore.getSemesters
+    isLoadingSems.value = false
   })
 }
 

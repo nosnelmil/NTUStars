@@ -6,10 +6,12 @@
         <!-- <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" /> -->
 
         <q-toolbar-title class="brand-font">
-          <q-avatar class="q-mb-xs">
-            <img :src="NTUStarsIcon">
-          </q-avatar>
-            NTU Stars
+          <span class="title" @click="leftDrawerOpen = !leftDrawerOpen">
+            <q-avatar class="q-mb-xs">
+              <img :src="NTUStarsIcon">
+            </q-avatar>
+              NTU Stars
+          </span>
         </q-toolbar-title>
 
         <!-- <q-toggle
@@ -19,7 +21,7 @@
           unchecked-icon="dark"
           @update:model-value="toggleDarkMode"
         /> -->
-        <q-btn dense flat label="Help" @click="leftDrawerOpen = !leftDrawerOpen"/>
+        <q-btn dense flat label="Help" @click="leftDrawerOpen = !leftDrawerOpen" class="text-capitalize"/>
         <q-btn dense flat round icon="menu" @click="toggleRightDrawer"  class="q-ml-xs"/>
       </q-toolbar>
     </q-header>
@@ -93,7 +95,10 @@ function toggleDarkMode(){
 
 </script>
 
-<style>
+<style scoped>
+.title{
+  cursor: pointer;
+}
 /* .body--light {
   background-color: #edf2f4;
 } */

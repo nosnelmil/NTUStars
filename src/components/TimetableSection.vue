@@ -48,7 +48,7 @@ const calendarOptions = ref({
   views: {
     timeGridSixDay: {
       type: 'timeGrid',
-      duration: { days:6 }
+      duration: { days:5 }
     }
   },
   height: 1000,

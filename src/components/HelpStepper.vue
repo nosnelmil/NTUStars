@@ -44,8 +44,8 @@
       <br>
       <span class="text-red text-bold">Warning<br></span>
       Avoid adding CC mods as they might lag the site. Instead, try adding custom events to represent represent them. <br> 
+      <span class="text-caption text-subtitle2 text-grey-7">*working on a fix</span>
       
-      <span>*working on a fix</span>
       <q-stepper-navigation>
         <q-btn flat @click="step = 1" color="primary" label="Back" />
         <q-btn @click="step = 3" color="primary" label="Continue" class="q-ml-sm" />
@@ -90,7 +90,7 @@
 
     <q-step
       :name="5"
-      title="Whats next?"
+      title="What's next?"
       done-icon='none'
       active-icon='none'
     >
