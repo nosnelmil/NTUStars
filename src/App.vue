@@ -13,18 +13,37 @@
         </q-toolbar-title>
 
         <!-- <q-toggle
-          v-model="darkMode"
+          v-model="leftDrawerOpen"
           checked-icon="cresent"
           color="dark"
           unchecked-icon="dark"
           @update:model-value="toggleDarkMode"
         /> -->
-        <q-btn dense flat round icon="menu" @click="toggleRightDrawer" />
+        <q-btn dense flat label="Help" @click="leftDrawerOpen = !leftDrawerOpen"/>
+        <q-btn dense flat round icon="menu" @click="toggleRightDrawer"  class="q-ml-xs"/>
       </q-toolbar>
     </q-header>
 
-    <!-- <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered mini>
-    </q-drawer> -->
+    <q-drawer 
+      show-if-above 
+      v-model="leftDrawerOpen" 
+      side="left" 
+      bordered
+      @show="useTimetableStore().resize()"
+      @hide="useTimetableStore().resize()"
+    >
+      <HelpStepper @handle-finish="leftDrawerOpen = false"/>
+      <div v-if="leftDrawerOpen" class="absolute" style="top: 15px; right: -17px">
+        <q-btn
+          dense
+          round
+          unelevated
+          color="primary"
+          icon="chevron_left"
+          @click="leftDrawerOpen = false"
+        />
+      </div>
+    </q-drawer>
 
     <q-drawer 
       show-if-above 
@@ -59,8 +78,10 @@ import { useTimetableStore } from './stores/timetable';
 import DrawerStepper from './components/DrawerStepper.vue';
 import { useQuasar } from 'quasar'
 import NTUStarsIcon from '@/assets/NTUStars-icon.png'
+import HelpStepper from './components/HelpStepper.vue';
 
 const rightDrawerOpen = ref(false)
+const leftDrawerOpen = ref(false)
 const $q = useQuasar()
 const darkMode = ref($q.dark.isActive)
 function toggleRightDrawer () {
