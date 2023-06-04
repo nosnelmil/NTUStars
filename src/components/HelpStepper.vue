@@ -14,12 +14,12 @@
       done-icon='none'
       active-icon='none'
     >
-      Welcome to the NTU Stars! <br>
+      Welcome to NTU Stars! <br>
       This website hopes to alleviate the pain of planning your timetable.
       <br>
       <br>
       All data shown here comes directly from 
-      <a href="https://wish.wis.ntu.edu.sg/webexe/owa/aus_schedule.main">NTU Class Schedule Site</a>,
+      <a href="https://wish.wis.ntu.edu.sg/webexe/owa/aus_schedule.main" target="_blank">NTU Class Schedule Site</a>,
       so some content might take some time to load.
       <br>
       <br>
