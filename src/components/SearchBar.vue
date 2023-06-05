@@ -39,9 +39,9 @@ const timetableStore = useTimetableStore()
 const search = ref(null)
 async function onSubmit(){
   if(!search.value) return
- 
   isLoading.value = true;
-  await timetableStore.addCourse(search.value) 
+  const searchVal = search.value.trim()
+  await timetableStore.addCourse(searchVal) 
   isLoading.value = false
   search.value = null
   form.value.reset()

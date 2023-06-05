@@ -31,7 +31,7 @@
 import FullCalendar from '@fullcalendar/vue3'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useTimetableStore } from '../stores/timetable'
 import { useQuasar } from 'quasar'
 import EventFormDialog from './EventFormDialog.vue'
@@ -48,7 +48,7 @@ const calendarOptions = ref({
   views: {
     timeGridSixDay: {
       type: 'timeGrid',
-      duration: { days:5 }
+      duration: { days:6 }
     }
   },
   height: 1000,

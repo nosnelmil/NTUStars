@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
-const firebaseEndpoint = "https://asia-east1-ntu-schedule-maker.cloudfunctions.net/app/"
+// const firebaseEndpoint = "https://asia-east1-ntu-schedule-maker.cloudfunctions.net/app/"
+const firebaseEndpoint = "http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/app/" // dev endpoint
 const Day = {
 	"MON": "1",
 	"TUE": "2",

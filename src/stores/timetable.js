@@ -51,6 +51,10 @@ export const useTimetableStore = defineStore('timetable', {
   },
   
   actions: {
+    setTimeTable(){
+      if(Object.keys(this.timeTable).length == 0) return
+
+    },
     setCalendarApi(calenderApi){
       this.calenderApi = calenderApi
     },
@@ -59,14 +63,13 @@ export const useTimetableStore = defineStore('timetable', {
       const semester = this.semester
       const calendar = this.calenderApi.getApi().view.calendar
       // check if already in timetable
-      if(semester in this.coursesAdded && courseCode in this.coursesAdded[semester]){
+      if(this.coursesAdded?.[semester]?.[courseCode]){
         Notify.create({message: "Course already in timetable!", color: "negative"})
         return
       }
       // instantiate if needed
-      if(!(semester in this.coursesAdded)) this.coursesAdded[semester] = {}
       // add initial value to coursesAdded
-      this.coursesAdded[semester][courseCode] = {
+      (this.coursesAdded[semester] ??= {})[courseCode] = {
         isLoading: true,
         courseName: "",
         index: "",
@@ -81,20 +84,21 @@ export const useTimetableStore = defineStore('timetable', {
         delete this.coursesAdded[semester][courseCode]
         return null
       }
+
       // get a color for this course
-      var backgroundColor = this.colors.pop() || "#5C6BC0"
+      var backgroundColor = this.colors.pop() || "#5C6BC0";
      
       // store ids in state so its easier to delete later
       // instantiate
-      if (!(semester in this.timeTable)) this.timeTable[semester] = {}
-      this.timeTable[semester][courseCode] = {}
-      this.timeTable[semester][courseCode]["lecture"] = []
-      this.timeTable[semester][courseCode]["lessons"] = []
+      (this.timeTable[semester] ??= {})[courseCode] = {
+        "lecture": [],
+        "lessons": [],
+      }
 
       // add the lecture slots for this course
       for(const classInfo of schedule["lecture"]){
         calendar.addEvent(addTimetableProp(classInfo,false,backgroundColor))
-        this.timeTable[semester][courseCode]["lecture"].push(classInfo.id)
+        this.timeTable[semester][courseCode]["lecture"].push(classInfo)
       }
 
       // add the first non-lecture slot for this course
@@ -103,7 +107,7 @@ export const useTimetableStore = defineStore('timetable', {
         if(index == "lecture" || index == "courseName") continue
         for(const classInfo of indexSchedule){
           calendar.addEvent(addTimetableProp(classInfo,false,backgroundColor))
-          this.timeTable[semester][courseCode]["lessons"].push(classInfo.id)
+          this.timeTable[semester][courseCode]["lessons"].push(classInfo)
         }
         addedIndex = index
         break
@@ -126,10 +130,10 @@ export const useTimetableStore = defineStore('timetable', {
       if(!(semester in this.timeTable)){
         this.timeTable[semester] = {}
       }
-      if(!("custom" in this.timeTable[semester]) || !this.timeTable[semester]["custom"].length){
-        this.timeTable[semester]["custom"] = []
-        if(!(semester in this.coursesAdded)) this.coursesAdded[semester] = {}
-        this.coursesAdded[semester]["custom"] = {
+      console.log(this.timeTable?.[semester]?.["custom"] > 0)
+      if(!(this.timeTable?.[semester]?.["custom"]?.length > 0)){
+        (this.timeTable[semester] ??= {})["custom"] = [];
+        (this.coursesAdded[semester] ??= {})["custom"] = {
           isLoading: true,
           courseCode: "custom",
           courseName: "Custom Events",
@@ -154,7 +158,7 @@ export const useTimetableStore = defineStore('timetable', {
       const event = addTimetableProp(classInfo, false, color)
       
       // save event to timetable & coursesAdded
-      this.timeTable[semester]["custom"].push(event.id)
+      this.timeTable[semester]["custom"].push(event)
       this.coursesAdded[semester]["custom"].isLoading = false
       this.coursesAdded[semester]["custom"].backgroundColor = color
       calendar.addEvent(event)
@@ -170,20 +174,20 @@ export const useTimetableStore = defineStore('timetable', {
       // remove from calendar
       if(courseCode != "custom"){
         if('lecture' in this.timeTable[semester][courseCode]){
-          for(const eventId of this.timeTable[semester][courseCode]['lecture']){
-            calendar.getEventById(eventId).remove()
+          for(const event of this.timeTable[semester][courseCode]['lecture']){
+            calendar.getEventById(event.id).remove()
           }
           this.timeTable[semester][courseCode]['lecture'] = {}
         }
         if('lessons' in this.timeTable[semester][courseCode]){
-          for(const eventId of this.timeTable[semester][courseCode]['lessons']){
-            calendar.getEventById(eventId).remove()
+          for(const event of this.timeTable[semester][courseCode]['lessons']){
+            calendar.getEventById(event.id).remove()
           }
           this.timeTable[semester][courseCode]['lessons'] = {}
         }
       }else{
-        for(const eventId of this.timeTable[semester][courseCode]){
-          calendar.getEventById(eventId).remove()
+        for(const event of this.timeTable[semester][courseCode]){
+          calendar.getEventById(event.id).remove()
         }
         this.timeTable[semester][courseCode] = []
       }
@@ -237,16 +241,16 @@ export const useTimetableStore = defineStore('timetable', {
         e.groupId = null
       })
       // remove oldIndex
-      for (const eventId of this.timeTable[semester][courseCode]['lessons']){
-        calendar.getEventById(eventId).remove()
+      for (const event of this.timeTable[semester][courseCode]['lessons']){
+        calendar.getEventById(event.id).remove()
       }
       // add back to calendar
-      const newEventIds = []
+      const newEvents = []
       for (const event of newLessons){
         calendar.addEvent(event)
-        newEventIds.push(event.id)
+        newEvents.push(event)
       }
-      this.timeTable[semester][courseCode]['lessons'] = newEventIds
+      this.timeTable[semester][courseCode]['lessons'] = newEvents
       // update added course index
       this.coursesAdded[semester][courseCode].index = newIndex
     },
