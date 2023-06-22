@@ -11,7 +11,7 @@ export const useTimetableStore = defineStore('timetable', {
       coursesAdded: {},
       preview: {},
       timeTable: {}, // the one thats showing on the screen
-      colors: ['#EF5350', '#29B6F6', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#42A5F5', '#26C6DA', '#26A69A', '#9CCC65', '#FFA726', '#BDBDBD',],
+      colors: ['#EF5350', '#29B6F6', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#42A5F5', '#26C6DA', '#26A69A', '#9CCC65', '#FFA726'],
       isLoading: false,
       semester: null,
     }
@@ -53,7 +53,6 @@ export const useTimetableStore = defineStore('timetable', {
   actions: {
     setTimeTable(){
       if(Object.keys(this.timeTable).length == 0) return
-      console.log(this.timeTable)
       for(const courseCodeObj of Object.values(this.timeTable)){
         for(const groupedTimeTableItems of Object.values(courseCodeObj)){
           for(const timeTableItems of Object.values(groupedTimeTableItems)){
@@ -135,7 +134,7 @@ export const useTimetableStore = defineStore('timetable', {
         courseCode: courseCode
       }
     },
-    addCustomEvent(selectInfo, name){
+    addCustomEvent(selectInfo, name){  
       const semester = this.semester
       const calendar = this.calenderApi.getApi().view.calendar
       // Add to custom events if needed
@@ -143,9 +142,10 @@ export const useTimetableStore = defineStore('timetable', {
       if(!(semester in this.timeTable)){
         this.timeTable[semester] = {}
       }
-      console.log(this.timeTable?.[semester]?.["custom"] > 0)
-      if(!(this.timeTable?.[semester]?.["custom"]?.length > 0)){
-        (this.timeTable[semester] ??= {})["custom"] = [];
+      if(!(this.timeTable?.[semester]?.["custom"]?.["events"])){
+        (this.timeTable[semester] ??= {})["custom"] = {
+          "events": []
+        };
         (this.coursesAdded[semester] ??= {})["custom"] = {
           isLoading: true,
           courseCode: "custom",
@@ -171,11 +171,20 @@ export const useTimetableStore = defineStore('timetable', {
       const event = addTimetableProp(classInfo, false, color)
       
       // save event to timetable & coursesAdded
-      this.timeTable[semester]["custom"].push(event)
+      this.timeTable[semester]["custom"]["events"].push(event)
       this.coursesAdded[semester]["custom"].isLoading = false
       this.coursesAdded[semester]["custom"].backgroundColor = color
       calendar.addEvent(event)
       
+    },
+    updateCustomEvent(event){
+      this.timeTable[this.semester]["custom"]["events"].forEach((e) => {
+        if(e.id == event.id){
+          e.courseName = event.extendedProps.courseName
+          e.start = event.startStr
+          e.end = event.endStr
+        }
+      })
     },
     removeCourse(courseCode){
       const semester = this.semester
@@ -199,7 +208,7 @@ export const useTimetableStore = defineStore('timetable', {
           this.timeTable[semester][courseCode]['lessons'] = []
         }
       }else{
-        for(const event of this.timeTable[semester][courseCode]){
+        for(const event of this.timeTable[semester][courseCode]['events']){
           calendar.getEventById(event.id).remove()
         }
         this.timeTable[semester][courseCode] = []
@@ -297,12 +306,13 @@ export const useTimetableStore = defineStore('timetable', {
       return tm.date
     },    
   },
-  persist: true
-  // {
-  //   afterRestore: (ctx) => {
-  //     console.log('about to restore,' , ctx.store.$reset())
-  //   }
-  // }
+  persist:
+  {
+    afterRestore: (ctx) => {
+      // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
+      ctx.store.preview = {}
+    }
+  }
 })
 
 function addTimetableProp(classInfo, isPreview, color){
