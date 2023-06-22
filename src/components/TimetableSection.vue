@@ -10,7 +10,7 @@
                 </div>
                 <div class="calendar-body-text"> {{ extendedProps.index }}</div>
                 <div v-if="extendedProps.type" class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
-              <q-tooltip v-if="!extendedProps.isPreview && !(Object.keys(extendedProps).length == 0)">
+              <q-tooltip v-if="!(Object.keys(extendedProps).length == 0)">
                 <div>{{ extendedProps.courseCode }}</div>
                 <div>{{ extendedProps.courseName }}</div>
                 <div v-if="extendedProps.type"> Type: {{ extendedProps.type }}</div>
@@ -134,8 +134,11 @@ function handleEventClick(clickInfo) {
     
   if(timetableStore.getCourseCodeShowingPreview == courseCode){
     timetableStore.resetPreview()
+    // remove floating animation
+
   }else{
     timetableStore.setPreview(courseCode)
+    // add floating animation
   }
   
 }
@@ -185,5 +188,17 @@ function handleMouseLeave(mouseLeaveInfo){
   box-shadow: 0px 4px 8px rgba(38, 38, 38, 0.2);
   top: -4px;
   border: 1px solid #cccccc;
+}
+.floating { 
+    animation-name: floating;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+ 
+@keyframes floating {
+    0% { transform: translate(0,  0px); }
+    50%  { transform: translate(0, -5px); }
+    100%   { transform: translate(0, 0px); }   
 }
 </style>
