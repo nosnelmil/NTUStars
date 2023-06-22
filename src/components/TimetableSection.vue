@@ -69,6 +69,8 @@ const calendarOptions = ref({
   eventMouseEnter: handleMouseEnter,
   eventMouseLeave: handleMouseLeave,
   eventClick: handleEventClick,
+  eventDrop: (e) => timetableStore.updateCustomEvent(e.event),
+  eventResize: (e) => timetableStore.updateCustomEvent(e.event),
 })
 
 const currentEvents = ref(null)
@@ -115,6 +117,7 @@ function handleEventClick(clickInfo) {
       persistent: true
     }).onOk(data => {
       event.setExtendedProp("courseName", data)
+      timetableStore.updateCustomEvent(event)
     }).onCancel(() => {
       // console.log('>>>> Cancel')
     }).onDismiss(() => {
