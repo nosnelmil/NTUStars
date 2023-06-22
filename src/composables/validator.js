@@ -1,3 +1,3 @@
 export function validateCourseCode(courseCode) {
-  return courseCode.length == 6
+  return courseCode != null && courseCode.length == 6
 };
