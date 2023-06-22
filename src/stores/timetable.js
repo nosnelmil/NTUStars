@@ -11,7 +11,7 @@ export const useTimetableStore = defineStore('timetable', {
       coursesAdded: {},
       preview: {},
       timeTable: {}, // the one thats showing on the screen
-      colors: ['#EF5350', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#78909C'],
+      colors: ['#EF5350', '#29B6F6', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#42A5F5', '#26C6DA', '#26A69A', '#9CCC65', '#FFA726', '#BDBDBD',],
       isLoading: false,
       semester: null,
     }
@@ -53,7 +53,18 @@ export const useTimetableStore = defineStore('timetable', {
   actions: {
     setTimeTable(){
       if(Object.keys(this.timeTable).length == 0) return
-
+      console.log(this.timeTable)
+      for(const courseCodeObj of Object.values(this.timeTable)){
+        for(const groupedTimeTableItems of Object.values(courseCodeObj)){
+          for(const timeTableItems of Object.values(groupedTimeTableItems)){
+            if(timeTableItems){
+              for(const timeTableItem of timeTableItems){
+                this.calenderApi.getApi().view.calendar.addEvent(timeTableItem)
+              }
+            }
+          }
+        } 
+      }
     },
     setCalendarApi(calenderApi){
       this.calenderApi = calenderApi
@@ -96,8 +107,9 @@ export const useTimetableStore = defineStore('timetable', {
       }
 
       // add the lecture slots for this course
-      for(const classInfo of schedule["lecture"]){
-        calendar.addEvent(addTimetableProp(classInfo,false,backgroundColor))
+      for(var classInfo of schedule["lecture"]){
+        classInfo = addTimetableProp(classInfo,false,backgroundColor)
+        calendar.addEvent(classInfo)
         this.timeTable[semester][courseCode]["lecture"].push(classInfo)
       }
 
@@ -105,8 +117,9 @@ export const useTimetableStore = defineStore('timetable', {
       let addedIndex = ""
       for(const [index, indexSchedule] of Object.entries(schedule)){
         if(index == "lecture" || index == "courseName") continue
-        for(const classInfo of indexSchedule){
-          calendar.addEvent(addTimetableProp(classInfo,false,backgroundColor))
+        for(var classInfo of indexSchedule){
+          classInfo = addTimetableProp(classInfo,false,backgroundColor)
+          calendar.addEvent(classInfo)
           this.timeTable[semester][courseCode]["lessons"].push(classInfo)
         }
         addedIndex = index
@@ -177,13 +190,13 @@ export const useTimetableStore = defineStore('timetable', {
           for(const event of this.timeTable[semester][courseCode]['lecture']){
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[semester][courseCode]['lecture'] = {}
+          this.timeTable[semester][courseCode]['lecture'] = []
         }
         if('lessons' in this.timeTable[semester][courseCode]){
           for(const event of this.timeTable[semester][courseCode]['lessons']){
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[semester][courseCode]['lessons'] = {}
+          this.timeTable[semester][courseCode]['lessons'] = []
         }
       }else{
         for(const event of this.timeTable[semester][courseCode]){
@@ -216,6 +229,9 @@ export const useTimetableStore = defineStore('timetable', {
           }
         }
       }
+      if(!preview.length){
+        Notify.create({message: "There are no other indexes for this module.", type: "negative"})
+      }
       this.preview[semester] = preview
     },
     resetPreview(){
@@ -223,7 +239,7 @@ export const useTimetableStore = defineStore('timetable', {
       if(!(semester in this.preview)) return
       const calendar = this.calenderApi.getApi().view.calendar
       for(const event of this.preview[semester]){
-        calendar.getEventById(event.id).remove()
+        calendar.getEventById(event.id)?.remove()
       }
       this.preview[semester] = []
     },
@@ -280,7 +296,13 @@ export const useTimetableStore = defineStore('timetable', {
       const tm = parseDate(newDay)
       return tm.date
     },    
-  }
+  },
+  persist: true
+  // {
+  //   afterRestore: (ctx) => {
+  //     console.log('about to restore,' , ctx.store.$reset())
+  //   }
+  // }
 })
 
 function addTimetableProp(classInfo, isPreview, color){

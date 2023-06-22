@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref ,computed } from 'vue'
+import { ref ,computed, onMounted } from 'vue'
 import SearchBar from './SearchBar.vue';
 import SelectedList from './SelectedList.vue';
 import SelectSemBar from './SelectSemBar.vue';
@@ -49,6 +49,12 @@ const timetableStore = useTimetableStore()
 const step = ref(1)
 const stepper = ref(null)
 const title = computed(() => timetableStore.getSemShortName)
+onMounted(() => {
+  if(timetableStore.getSemester != null){
+    isSemSelected.value = true
+    stepper.value.next()
+  }
+})
 
 function handleStepIncrease() {
   if(timetableStore.getSemester != null){

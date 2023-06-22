@@ -75,6 +75,7 @@ const currentEvents = ref(null)
 
 onMounted(() => {
   timetableStore.setCalendarApi(calendar)
+  timetableStore.setTimeTable()
 })
 
 function handleDateSelect(selectInfo) {
