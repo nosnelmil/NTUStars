@@ -17,7 +17,7 @@
     </q-drawer>
 
     <q-dialog v-model="helpDialogOpen">
-      <HelpStepper @handle-finish="helpDialogOpen = false"/>
+      <HelpStepper @handle-finish="helpDialogOpen = !helpDialogOpen"/>
     </q-dialog>
 
     <q-page-container>
@@ -33,13 +33,15 @@
 import { ref} from 'vue'
 import { RouterView } from 'vue-router'
 import { useTimetableStore } from './stores/timetable';
+import { useSettingsStore } from './stores/settings';
 import HeaderSection from './components/layout/HeaderSection.vue';
 import FooterSection from './components/layout/FooterSection.vue';
 import HelpStepper from './components/HelpStepper.vue';
 import DrawerStepper from './components/DrawerStepper.vue';
 
+
 const rightDrawerOpen = ref(false)
-const helpDialogOpen = ref(true)
+const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
 
 </script>
 
