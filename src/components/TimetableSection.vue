@@ -1,7 +1,7 @@
 <template>
   <div class="subcontent">
     <div class="row justify-center">
-      <div class="col-12 col-md-10 q-pa-md bg-secondary" style="max-height: 90vh;overflow-y: scroll;">
+      <div class="col-12 col-md-10 q-pa-md bg-body">
         <FullCalendar ref="calendar" :options="calendarOptions"> 
           <template v-slot:eventContent='{event: {extendedProps}}' class="lighten">
             <div class="text-left q-pa-xs" style="height: 100%;">
