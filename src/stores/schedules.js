@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
 // const firebaseEndpoint = "https://asia-east1-ntu-schedule-maker.cloudfunctions.net/app/"
-const firebaseEndpoint = "http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/app/" // dev endpoint
+const firebaseEndpoint = "http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/" // dev endpoint
 const Day = {
 	"MON": "1",
 	"TUE": "2",
@@ -80,7 +80,7 @@ export const useSchedules = defineStore('schedules', {
         })
         try{
           const response = await fetch(
-            firebaseEndpoint + "get-schedule",
+            firebaseEndpoint + "getSchedule",
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -115,7 +115,7 @@ export const useSchedules = defineStore('schedules', {
       if(Object.keys(this.semesters) >0) return
       try{
         const response = await fetch(
-          firebaseEndpoint + "get-semesters",
+          firebaseEndpoint + "getSemesters",
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
