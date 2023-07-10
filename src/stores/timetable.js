@@ -18,9 +18,6 @@ export const useTimetableStore = defineStore('timetable', {
   },
   
   getters: {
-    getColor: (state) =>  {
-      return state.colors.pop()
-    },
     getTimeTable: (state) => {
       return state.timeTable[state.semester]
     },
@@ -46,6 +43,16 @@ export const useTimetableStore = defineStore('timetable', {
         }
       }else{
         return "Select Semester"
+      }
+    },
+    getTotalAus: (state) => {
+      if(state.semester && state.semester in state.coursesAdded){
+        return Object.keys(state.coursesAdded[state.semester])
+                      .reduce((prev, key) => 
+                        prev + parseInt(state.coursesAdded[state.semester][key].au)
+                        , 0)
+      }else {
+        return 0
       }
     }
   },
@@ -153,7 +160,7 @@ export const useTimetableStore = defineStore('timetable', {
           index: "",
           backgroundColor: "",
         }
-        color = this.getColor
+        color = this.colors.pop()
       } 
       else{
         color = this.coursesAdded[semester]["custom"].backgroundColor
@@ -306,7 +313,7 @@ export const useTimetableStore = defineStore('timetable', {
       return tm.date
     },    
   },
-  persist:
+  persist: 
   {
     afterRestore: (ctx) => {
       // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
