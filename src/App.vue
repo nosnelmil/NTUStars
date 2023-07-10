@@ -69,7 +69,6 @@ const rightDrawerOpen = ref(false)
 const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
 
 function toggleLeftDrawer(){
-  console.log("called")
   settingsStore.toggleLeftDrawer()
 }
 </script>
