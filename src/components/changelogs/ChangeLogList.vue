@@ -39,14 +39,14 @@ import ChangeLogItem from './ChangeLogItem.vue';
 
 const majorChanges = [
     {
-        title: "Persisted State & AUs",
+        title: "Persisted State & Displaying of Academic Units (AU)",
         dateTime: formatDateTime("2023-07-10", "17:23"),
-        description: "Your timetable will now persist it's data after you close or leave the website. Also, you will be able to view the number of AU awared by different modules and the total AU you currently have." 
+        description: "Your timetable data will now be saved even when you close or leave the website. Additionally, you will be able to view the number of Academic Units (AU) awarded by different modules and the total number of AU you currently have." 
     },
     {
-        title: "Inital Release",
+        title: "Initial Release",
         dateTime: formatDateTime("2023-06-10", "16:04"),
-        description: "Release of ntu semester timetable planner."
+        description: "First stable version of ntu semester timetable planner."
     },
 
 ]

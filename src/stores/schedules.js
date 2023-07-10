@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
 function firebaseEndpoint(functionName){
-  // return `https://${functionName}-prm4upiq5q-de.a.run.app`
-  return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
+  return `https://${functionName}-prm4upiq5q-de.a.run.app`
+  // return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
 }
 const Day = {
 	"MON": "1",

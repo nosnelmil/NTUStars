@@ -1,7 +1,7 @@
 <template>
     <q-item>
         <q-item-section>
-            <q-item-label class="row justify-between q-mb-xs">{{title}} <span class="text-caption text-grey">{{formatElapsedTime(dateTime)}} </span></q-item-label>
+            <q-item-label class="row justify-between q-mb-xs">{{title}}  <span class="text-caption text-grey">{{formatElapsedTime(dateTime)}} </span></q-item-label>
             <q-item-label caption>{{description}}</q-item-label>
         </q-item-section>
     </q-item>
@@ -11,7 +11,6 @@
     const props = defineProps(["title", "dateTime", "description"])
 
     function formatElapsedTime(date) {
-        console.log(date)
         const elapsed = new Date() - new Date(date);
         const seconds = Math.floor(elapsed / 1000);
         const minutes = Math.floor(seconds / 60);
