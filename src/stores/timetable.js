@@ -84,13 +84,14 @@ export const useTimetableStore = defineStore('timetable', {
         courseName: "",
         index: "",
         backgroundColor: "",
+        au: "",
         courseCode: courseCode
       }
       // retrieve the course scheudle
       const scheduleStore = useSchedules()
-      const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
-      if(!schedule) {
-        // course does not exist / there is no schedule
+      const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
+      if(!courseInfo) {
+        // course does not exist / there is no courseInfo
         delete this.coursesAdded[semester][courseCode]
         return null
       }
@@ -101,37 +102,36 @@ export const useTimetableStore = defineStore('timetable', {
       // store ids in state so its easier to delete later
       // instantiate
       (this.timeTable[semester] ??= {})[courseCode] = {
-        "lecture": [],
+        "lectures": [],
         "lessons": [],
       }
 
       // add the lecture slots for this course
-      for(var classInfo of schedule["lecture"]){
+      for(var classInfo of courseInfo.lectures){
         classInfo = addTimetableProp(classInfo,false,backgroundColor)
         calendar.addEvent(classInfo)
-        this.timeTable[semester][courseCode]["lecture"].push(classInfo)
+        this.timeTable[semester][courseCode].lectures.push(classInfo)
       }
 
       // add the first non-lecture slot for this course
       let addedIndex = ""
-      for(const [index, indexSchedule] of Object.entries(schedule)){
-        if(index == "lecture" || index == "courseName") continue
+      for(const [index, indexSchedule] of Object.entries(courseInfo.lessons)){
         for(var classInfo of indexSchedule){
           classInfo = addTimetableProp(classInfo,false,backgroundColor)
           calendar.addEvent(classInfo)
-          this.timeTable[semester][courseCode]["lessons"].push(classInfo)
+          this.timeTable[semester][courseCode].lessons.push(classInfo)
         }
         addedIndex = index
         break
       }
-    
       // update courses added state
       this.coursesAdded[semester][courseCode] = {
         isLoading: false,
-        courseName: schedule.courseName,
+        courseName: courseInfo.courseName,
         index: addedIndex,
         backgroundColor: backgroundColor,
-        courseCode: courseCode
+        courseCode: courseCode,
+        au: courseInfo.au,
       }
     },
     addCustomEvent(selectInfo, name){  
@@ -195,11 +195,11 @@ export const useTimetableStore = defineStore('timetable', {
       }
       // remove from calendar
       if(courseCode != "custom"){
-        if('lecture' in this.timeTable[semester][courseCode]){
-          for(const event of this.timeTable[semester][courseCode]['lecture']){
+        if('lectures' in this.timeTable[semester][courseCode]){
+          for(const event of this.timeTable[semester][courseCode]['lectures']){
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[semester][courseCode]['lecture'] = []
+          this.timeTable[semester][courseCode]['lectures'] = []
         }
         if('lessons' in this.timeTable[semester][courseCode]){
           for(const event of this.timeTable[semester][courseCode]['lessons']){
@@ -224,13 +224,13 @@ export const useTimetableStore = defineStore('timetable', {
       const scheduleStore = useSchedules()
       const semester = this.semester
       const calendar = this.calenderApi.getApi().view.calendar
-      const schedule = await scheduleStore.findCourseSchedule(semester, courseCode)
+      const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
       const showing = this.coursesAdded[semester][courseCode]
       const preview = []
       this.resetPreview()
-      if(schedule){
-        for(const [index, indexSchedule] of Object.entries(schedule)){
-          if (index == "lecture" || index == "courseName" || indexSchedule[0].index == showing.index) continue
+      if(courseInfo){
+        for(const [index, indexSchedule] of Object.entries(courseInfo.lessons)){
+          if (index == showing.index) continue
           for(const classInfo of indexSchedule){
             const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
             preview.push(previewEvent)

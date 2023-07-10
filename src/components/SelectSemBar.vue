@@ -36,7 +36,7 @@ async function filterFn(val, update, abort){
     return
   }
   isLoadingSems.value = true
-  await schedulesStore.findSemesters()
+  await schedulesStore.fetchSemesters()
   update(() => {
     options.value = schedulesStore.getSemesters
     isLoadingSems.value = false

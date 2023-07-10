@@ -48,7 +48,7 @@ const timeDict = {
 export const useSchedules = defineStore('schedules', {
   state: () => {
     return {
-      schedules: {},
+      coursesInfo: {},
       isLoading: false,
       semesters: {}
     }
@@ -56,9 +56,9 @@ export const useSchedules = defineStore('schedules', {
   getters: {
     getSchedule: (state) => {
       return (semester, courseCode) => {
-        if(semester in state.schedules 
-            && courseCode in state.schedules[semester] ){
-              return state.schedules[semester][courseCode]
+        if(semester in state.coursesInfo 
+            && courseCode in state.coursesInfo[semester] ){
+              return state.coursesInfo[semester][courseCode]
         }
         return null
       }
@@ -67,11 +67,11 @@ export const useSchedules = defineStore('schedules', {
     
   },
   actions: {
-    async findCourseSchedule(semester, code){
+    async fetchCourseSchedule(semester, code){
       const courseCode = code.toUpperCase();
-      let schedule = this.getSchedule(semester, courseCode)
-      if(schedule){
-        return schedule
+      let courseInfo = this.getSchedule(semester, courseCode)
+      if(courseInfo && semester in courseInfo){
+        return courseInfo
       }else{
         // get from database
         const reqBody = JSON.stringify({
@@ -87,13 +87,13 @@ export const useSchedules = defineStore('schedules', {
               body: reqBody
             })
           const data = await response.json()
-          if(data.success){
-            const parsedSchedule = this.parseSchedule(data)
-            if(!(semester in this.schedules)){
-              this.schedules[semester] = {}
+          if(data){
+            const parsedCourseInfo = this.parseCourseInfoFromDB(data)
+            if(!(semester in this.coursesInfo)){
+              this.coursesInfo[semester] = {}
             }
-            this.schedules[semester][courseCode] = parsedSchedule
-            return parsedSchedule
+            this.coursesInfo[semester][courseCode] = parsedCourseInfo
+            return parsedCourseInfo
           }else{
             // error
             Notify.create({
@@ -110,7 +110,7 @@ export const useSchedules = defineStore('schedules', {
 
       }
     },
-    async findSemesters(){
+    async fetchSemesters(){
       // get from database
       if(Object.keys(this.semesters) >0) return
       try{
@@ -121,7 +121,7 @@ export const useSchedules = defineStore('schedules', {
             headers: { 'Content-Type': 'application/json' },
           })
         const data = await response.json()
-        if(data.success){
+        if(data){
           this.semesters = data.semesters
         }else{
           // error
@@ -137,23 +137,27 @@ export const useSchedules = defineStore('schedules', {
         })
       }
     },
-    // schedules: {
+    // coursesInfo: {
     //   sem: {
     //     <courseCode>: {
     //       <index>:[{},{},{}]
-    //       lecture:[{},{},{}]
+    //       lectures:[{},{},{}]
     //     }
     //   }
     // },
 
     // Helper Functions
     // parse schedule to timetable format
-    parseSchedule(data){
-      const {schedule, courseName, courseCode} = data
-      var result = {}
+    parseCourseInfoFromDB(data){
+      const {schedule, courseName, courseCode, au} = data
+      var result = {
+        lectures: [],
+        lessons: {},
+        courseName: courseName,
+        courseCode: courseCode,
+        au: au
+      }
       var lectureAdded = false
-      result["lecture"] = []
-      result["courseName"] = courseName
       for(const [index, indexSchedule] of Object.entries(schedule)){
         result[index] = []
         for(var i=0; i<indexSchedule.length; i++){
@@ -178,9 +182,9 @@ export const useSchedules = defineStore('schedules', {
             classInfo.groupid = null
             classInfo.index = ""
             classInfo.group = ""
-            result["lecture"].push(classInfo)
+            result["lectures"].push(classInfo)
           }else{
-            result[index].push(classInfo)
+            (result["lessons"][index] ??= []).push(classInfo)
           }
         }
         lectureAdded = true
@@ -213,7 +217,13 @@ export const useSchedules = defineStore('schedules', {
       return "2023-05-0" + day
     },    
   },
-  persist: true
+  persist: false,
+  // {
+  //   afterRestore: (ctx) => {
+  //     console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
+  //     // ctx.store.preview = {}
+  //   }
+  // }
 })
 
 
