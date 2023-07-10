@@ -1,6 +1,6 @@
 <template>
   <q-footer>
-    <q-toolbar class="align-center">
+    <q-toolbar class="justify-center align-center">
       <!-- <q-toolbar-title shrink class="text-subtitle2">
         Developed by 
       </q-toolbar-title> -->

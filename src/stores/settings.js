@@ -4,6 +4,7 @@ export const useSettingsStore = defineStore('settings', {
   state: () => {
     return {
       openedHelpBefore: false,
+      leftDrawerOpen: true,
     }
   },
   
@@ -16,6 +17,10 @@ export const useSettingsStore = defineStore('settings', {
       return true
     }
   },
-  actions: {},
+  actions: {
+    toggleLeftDrawer(){
+      this.leftDrawerOpen = !this.leftDrawerOpen
+    }
+  },
   persist: true
 })

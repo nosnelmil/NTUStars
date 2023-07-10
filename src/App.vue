@@ -4,17 +4,28 @@
       <HeaderSection 
         @toggle-right-drawer="rightDrawerOpen = !rightDrawerOpen"
         @toggle-help-modal="helpDialogOpen = !helpDialogOpen"
+        @toggle-left-drawer="toggleLeftDrawer"
       />
     </q-header>
 
     <q-drawer 
-      show-if-above
-      v-model="leftDrawerOpen" 
+      v-model="settingsStore.leftDrawerOpen" 
       side="left" 
       bordered 
       @show="useTimetableStore().resize()"
-      @hide="useTimetableStore().resize()"> 
+      @hide="useTimetableStore().resize()"
+      > 
       <ChangeLogList />
+      <div class="q-mini-drawer-hide absolute" style="top: 15px; right: -17px">
+        <q-btn
+          dense
+          round
+          unelevated
+          color="accent"
+          icon="chevron_left"
+          @click="toggleLeftDrawer"
+        />
+      </div>
     </q-drawer>
 
     <q-drawer 
@@ -53,11 +64,14 @@ import HelpStepper from './components/HelpStepper.vue';
 import DrawerStepper from './components/DrawerStepper.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
 
-
+const settingsStore = useSettingsStore()
 const rightDrawerOpen = ref(false)
-const leftDrawerOpen = ref(true)
 const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
 
+function toggleLeftDrawer(){
+  console.log("called")
+  settingsStore.toggleLeftDrawer()
+}
 </script>
 
 <style scoped>
