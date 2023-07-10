@@ -35,7 +35,7 @@
       bordered 
       @show="useTimetableStore().resize()"
       @hide="useTimetableStore().resize()"> 
-      <DrawerStepper />
+      <SemCourseSelector />
     </q-drawer>
 
 
@@ -61,7 +61,7 @@ import { useSettingsStore } from './stores/settings';
 import HeaderSection from './components/layout/HeaderSection.vue';
 import FooterSection from './components/layout/FooterSection.vue';
 import HelpStepper from './components/HelpStepper.vue';
-import DrawerStepper from './components/DrawerStepper.vue';
+import SemCourseSelector from './components/SemCourseSelector.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
 
 const settingsStore = useSettingsStore()
