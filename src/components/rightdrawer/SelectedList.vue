@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { useTimetableStore } from '../stores/timetable';
+import { useTimetableStore } from '@/stores/timetable';
 import SelectedListItem from './SelectedListItem.vue';
 
 const timetableStore = useTimetableStore()

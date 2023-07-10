@@ -40,7 +40,7 @@ import { ref ,computed, onMounted } from 'vue'
 import SearchBar from './SearchBar.vue';
 import SelectedList from './SelectedList.vue';
 import SelectSemBar from './SelectSemBar.vue';
-import { useTimetableStore } from '../stores/timetable';
+import { useTimetableStore } from '@/stores/timetable';
 import { Dialog } from 'quasar';
 
 

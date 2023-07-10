@@ -30,7 +30,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useTimetableStore } from '../stores/timetable.js'
+import { useTimetableStore } from '@/stores/timetable.js'
 import { validateCourseCode } from '@/composables/validator.js'
 
 const form = ref(null)

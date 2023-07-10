@@ -13,7 +13,7 @@
     <q-item-label v-if="course.index" caption lines="1">
       Index: {{course.index}}
     </q-item-label>
-    <q-item-label v-if="course.index" caption lines="1">
+    <q-item-label v-if="course.au" caption lines="1">
       AU: {{course.au}}
     </q-item-label>
   

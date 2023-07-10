@@ -61,7 +61,7 @@ import { useSettingsStore } from './stores/settings';
 import HeaderSection from './components/layout/HeaderSection.vue';
 import FooterSection from './components/layout/FooterSection.vue';
 import HelpStepper from './components/HelpStepper.vue';
-import SemCourseSelector from './components/SemCourseSelector.vue';
+import SemCourseSelector from './components/rightdrawer/SemCourseSelector.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
 
 const settingsStore = useSettingsStore()

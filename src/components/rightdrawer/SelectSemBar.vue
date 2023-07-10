@@ -21,8 +21,8 @@
 
 <script setup>
 import { ref, onMounted} from 'vue'
-import { useSchedules } from '../stores/schedules';
-import { useTimetableStore } from '../stores/timetable';
+import { useSchedules } from '@/stores/schedules';
+import { useTimetableStore } from '@/stores/timetable';
 
 const props = defineProps(["isError"])
 const schedulesStore = useSchedules()
