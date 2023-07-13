@@ -73,7 +73,6 @@ const showRightDrawer = ref(true)
 const route = useRoute()
 
 watch(() => route.fullPath, () => {
-  console.log("test", route.fullPath)
   if(route.fullPath == '/'){
     showRightDrawer.value = true
   }else{

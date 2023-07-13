@@ -77,11 +77,9 @@ const isValid = ref(false)
 const course = ref(null)
 
 onMounted(async () => {
-    console.log(route.params)
     const sem = route.params.details[0]
     const courseCode = route.params.details[1]
     const courseInfo = await scheduleStore.fecthCourseSpecificDetails(sem, courseCode)
-    console.log(courseInfo)
     if(courseInfo){
         // populate data
         course.value = courseInfo
