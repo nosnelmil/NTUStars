@@ -3,10 +3,10 @@
         <q-list padding>
             <q-item>
                 <q-item-section>
-                    <q-item-label overline>MAJOR CHANGES</q-item-label>
+                    <q-item-label overline>CHANGES</q-item-label>
                 </q-item-section>
             </q-item>
-            <template v-for="changelog in majorChanges">
+            <template v-for="changelog in changes">
                 <q-separator inset></q-separator>
                 <ChangeLogItem
                     class="q-py-md" 
@@ -19,10 +19,10 @@
 
             <q-item>
                 <q-item-section>
-                    <q-item-label overline>MINOR CHANGES</q-item-label>
+                    <q-item-label overline>BUG FIXES</q-item-label>
                 </q-item-section>
             </q-item>
-            <template v-for="changelog in minorChanges">
+            <template v-for="changelog in bugfixes">
                 <q-separator inset></q-separator>
                 <ChangeLogItem
                     class="q-py-md" 
@@ -37,7 +37,7 @@
 <script setup>
 import ChangeLogItem from './ChangeLogItem.vue';
 
-const majorChanges = [
+const changes = [
     {
         title: "Persisted State & Displaying of Academic Units (AU)",
         dateTime: formatDateTime("2023-07-10", "17:23"),
@@ -51,7 +51,7 @@ const majorChanges = [
 
 ]
 
-const minorChanges = [
+const bugfixes = [
 ]
 
 function formatDateTime(date, time){

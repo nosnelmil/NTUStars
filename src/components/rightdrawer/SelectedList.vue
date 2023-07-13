@@ -6,7 +6,10 @@
       v-for="course in Object.values(timetableStore.getCoursesAdded)"
         :key="course.courseCode"
       >
-        <SelectedListItem :course="course" @handle-remove="(e) => handleRemove(course)"/>
+        <SelectedListItem 
+          :course="course" 
+          @handle-remove="(e) => handleRemove(course)"
+          @click="(e) => handleCourseClick(course)"/>
         <q-separator spaced />
       </template>
       <q-item-label header>
@@ -35,10 +38,21 @@
 <script setup>
 import { useTimetableStore } from '@/stores/timetable';
 import SelectedListItem from './SelectedListItem.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const timetableStore = useTimetableStore()
 function handleRemove(course){
   timetableStore.removeCourse(course.courseCode)  
 }
+function handleCourseClick(course){
+  if(course.courseCode == 'custom' || course.courseCode == ""){
+    return
+  }
+  router.push(`/courses/${timetableStore.getSemester}/${course.courseCode}`)
+}
+
+
 
 </script>

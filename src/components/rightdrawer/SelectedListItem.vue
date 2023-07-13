@@ -1,5 +1,5 @@
 <template>
-<q-item clickable v-ripple>
+<q-item clickable v-ripple> 
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
       <span class="text-weight-medium text-uppercase">
@@ -49,6 +49,7 @@ const emits = defineEmits(["handleRemove"])
 function onRemoveClicked(){
   emits("handleRemove", props.course)
 }
+
 </script>
 
 <style scoped>

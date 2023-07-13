@@ -17,10 +17,10 @@ const router = createRouter({
       component: CoursesView
     },
     {
-      path: '/course',
-      name: 'course',
-      component: CourseView
-    },
+      path: '/courses/:details+',
+      name: 'coursedetails',
+      component: CourseView,
+    }
   ]
 })
 

@@ -61,7 +61,31 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { useSchedules } from '@/stores/schedules.js'
+
+const route = useRoute()
+const scheduleStore = useSchedules()
+const isLoading = ref(true)
+const isValid = ref(false)
+
+onMounted(async () => {
+    console.log(route.params)
+    const sem = route.params.details[0]
+    const courseCode = route.params.details[1]
+    const courseInfo = await scheduleStore.fecthCourseSpecificDetails(sem, courseCode)
+    console.log(courseInfo)
+    if(courseInfo){
+        // populate data
+        isValid.value = true
+    }else{
+        isValid.value = false
+    }
+    isLoading.value = false
+})
+
 const course = ref({
     courseName: "SC2006 Software Engineering",
     au: 3,

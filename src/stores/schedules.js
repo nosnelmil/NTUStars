@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
 function firebaseEndpoint(functionName){
-  return `https://${functionName}-prm4upiq5q-de.a.run.app`
-  // return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
+  // return `https://${functionName}-prm4upiq5q-de.a.run.app`
+  return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
 }
 const Day = {
 	"MON": "1",
@@ -148,6 +148,47 @@ export const useSchedules = defineStore('schedules', {
     //   }
     // },
 
+    async fecthCourseSpecificDetails(sem, code){
+      console.log(sem, code)
+      const semester = sem.toUpperCase();
+      const courseCode = code.toUpperCase();
+      let courseInfo = this.getSchedule(semester, courseCode)
+      if(courseInfo && semester in courseInfo){
+        return courseInfo
+      }else{
+        // get from database
+        const reqBody = JSON.stringify({
+          "semester": semester,
+          "courseCode": courseCode
+        })
+        try{
+          const response = await fetch(
+            firebaseEndpoint("getcoursecontent"),
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: reqBody
+            })
+          const data = await response.json()
+          if(data){
+            return data
+          }else{
+            // error
+            Notify.create({
+              message: `${courseCode} does not exist for sem ${semester}`,
+              color: 'negative'
+            })
+            return null
+          }
+        }catch(e){
+          Notify.create({
+            message: `${courseCode} does not exist for sem ${semester}`,
+            color: 'negative'
+          })
+          return null
+        }
+      }
+    },
     // Helper Functions
     // parse schedule to timetable format
     parseCourseInfoFromDB(data){
