@@ -319,7 +319,7 @@ export const useTimetableStore = defineStore('timetable', {
     afterRestore: (ctx) => {
       // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
       ctx.store.preview = {}
-    }
+    },
   }
 })
 

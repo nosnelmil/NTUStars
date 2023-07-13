@@ -4,9 +4,8 @@
             <span class="text-h4 q-mr-sm">
                {{ course.courseCode }} {{ course.courseName }}
             </span>
-            <q-chip class="self-center" color="accent" text-color="white">AU: {{ course.au }}</q-chip>
             <q-space/>
-            <q-btn outline color="primary" icon="add" label="Calendar"></q-btn>
+            <q-chip class="self-center" color="accent" text-color="white">AU: {{ course.au }}</q-chip>
         </div>
         <div class="col-12 col-md-9 q-mb-md">
             <q-separator spaced></q-separator>
@@ -15,7 +14,7 @@
         <div class="col-12 col-md-9 q-mb-sm">
             <div class=" q-gutter-sm items-center">
                 <span class="text-subtitile1">Pre-requisites:</span>
-                <q-btn v-for="val in course.preRequisite" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
+                <q-btn flat dense unelevated color="secondary" :label="course.preRequisite == '' ? 'None' : course.preRequisite" class="q-my-none text-weight-bold" />
             </div>
         </div>
         <!-- Mutually exclusive -->
@@ -48,14 +47,15 @@
             <div class="col-12 q-my-md text-body1">{{course.description}}</div>
         </div>
         <div class="col-12 col-md-9 q-mt-md">
-            <q-table
+            <index-detail-table/>
+            <!-- <q-table
             class="my-sticky-header-table"
             flat bordered
             title="Indexes"
             :rows="rows"
             :columns="columns"
             row-key="name"
-            />
+            /> -->
         </div>
     </div>
 </template>
@@ -65,6 +65,7 @@ import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useSchedules } from '@/stores/schedules.js'
+import IndexDetailTable from '../components/details/indexDetailTable.vue';
 
 const route = useRoute()
 const scheduleStore = useSchedules()

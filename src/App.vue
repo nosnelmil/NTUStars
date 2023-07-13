@@ -5,6 +5,7 @@
         @toggle-right-drawer="rightDrawerOpen = !rightDrawerOpen"
         @toggle-help-modal="helpDialogOpen = !helpDialogOpen"
         @toggle-left-drawer="toggleLeftDrawer"
+        :show-right-drawer="showRightDrawer"
       />
     </q-header>
 
@@ -55,7 +56,7 @@
 
 <script setup>
 import { ref} from 'vue'
-import { RouterView } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
 import { useTimetableStore } from './stores/timetable';
 import { useSettingsStore } from './stores/settings';
 import HeaderSection from './components/layout/HeaderSection.vue';
@@ -63,10 +64,23 @@ import FooterSection from './components/layout/FooterSection.vue';
 import HelpStepper from './components/HelpStepper.vue';
 import SemCourseSelector from './components/rightdrawer/SemCourseSelector.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
+import { watch } from 'vue';
 
 const settingsStore = useSettingsStore()
 const rightDrawerOpen = ref(false)
 const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
+const showRightDrawer = ref(true)
+const route = useRoute()
+
+watch(() => route.fullPath, () => {
+  console.log("test", route.fullPath)
+  if(route.fullPath == '/'){
+    showRightDrawer.value = true
+  }else{
+    rightDrawerOpen.value = false
+    showRightDrawer.value = false
+  }
+},{immediate:true})
 
 function toggleLeftDrawer(){
   settingsStore.toggleLeftDrawer()

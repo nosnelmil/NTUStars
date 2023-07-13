@@ -1,5 +1,9 @@
 <template>
-<q-item clickable v-ripple> 
+<q-item 
+  clickable 
+  v-ripple
+  :to="course.courseCode == 'custom' ? false : `/courses/${semester}/${course.courseCode}`"
+  target="_blank"> 
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
       <span class="text-weight-medium text-uppercase">
@@ -43,9 +47,10 @@
 </template>
 
 <script setup>
-const props = defineProps(["course"])
-const emits = defineEmits(["handleRemove"])
+import { useTimetableStore } from '../../stores/timetable';
 
+const props = defineProps(["course", "semester"])
+const emits = defineEmits(["handleRemove"])
 function onRemoveClicked(){
   emits("handleRemove", props.course)
 }
