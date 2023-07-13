@@ -1,8 +1,8 @@
 <template>
-    <div class="row q-py-md justify-center q-pa-sm">
+    <div class="row q-py-md justify-center q-pa-sm" v-if="course">
         <div class="col-12 col-md-9 flex">
             <span class="text-h4 q-mr-sm">
-                {{ course.courseName }}
+               {{ course.courseCode }} {{ course.courseName }}
             </span>
             <q-chip class="self-center" color="accent" text-color="white">AU: {{ course.au }}</q-chip>
             <q-space/>
@@ -15,14 +15,14 @@
         <div class="col-12 col-md-9 q-mb-sm">
             <div class=" q-gutter-sm items-center">
                 <span class="text-subtitile1">Pre-requisites:</span>
-                <q-btn v-for="val in course.preRequisites" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
+                <q-btn v-for="val in course.preRequisite" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
             </div>
         </div>
         <!-- Mutually exclusive -->
         <div class="col-12 col-md-9 q-mb-sm">
             <div class=" q-gutter-sm items-center">
                 <span class="text-subtitile1">Mutually exclusive with:</span>
-                <q-btn v-for="val in course.mutex" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
+                <q-btn v-for="val in course.mutexWith" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
             </div>
         </div>
         <!-- Not available to Programme: -->
@@ -36,7 +36,7 @@
         <div class="col-12 col-md-9 q-mb-sm">
             <div class=" q-gutter-sm items-center">
                 <span class="text-subtitile1">Not available to all Programme with:</span>
-                <q-btn v-for="val in course.notAvailWith" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
+                <q-btn flat dense unelevated color="secondary" :label="course.notAvailWith" class="q-my-none text-weight-bold" />
             </div>
         </div>
         <!-- Remarks -->
@@ -79,6 +79,7 @@ onMounted(async () => {
     console.log(courseInfo)
     if(courseInfo){
         // populate data
+        course.value = courseInfo
         isValid.value = true
     }else{
         isValid.value = false
@@ -86,16 +87,7 @@ onMounted(async () => {
     isLoading.value = false
 })
 
-const course = ref({
-    courseName: "SC2006 Software Engineering",
-    au: 3,
-    preRequisites: ["SC1005", "SC1003", "SC1007"],
-    mutex: ["SC1005", "SC1003", "SC1007"],
-    notAvailTo: ["SC1005", "SC1003", "SC1007"],
-    notAvailWith: ["(Admyr 2011-2020)"],
-    remarks: "Not offered as Unrestricted Elective",
-    description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae sunt rerum quis consequuntur provident veniam a iure impedit odio commodi! Fugiat numquam eaque atque totam nisi, culpa labore corrupti repudiandae iste minus, omnis facere voluptatum ratione tempora voluptatibus! Distinctio quibusdam dolorem velit? Sit magnam vitae iure excepturi laudantium voluptatibus. Dolore obcaecati dolorem illum ex nobis voluptatem laudantium esse earum a sunt repellendus aliquam fugit reiciendis harum perferendis, itaque incidunt numquam sit quas, optio officiis soluta temporibus ipsam distinctio. Voluptatibus, cumque debitis ex reprehenderit magni molestias ab ea omnis nostrum repudiandae dignissimos similique ad nemo. Quis consequatur atque numquam animi aperiam."
-})
+const course = ref(null)
 
 const columns = [
   { name: 'name',
