@@ -1,7 +1,7 @@
 <template>
     <div class="row q-py-md justify-center q-pa-sm" v-if="course">
-        <div class="col-12 col-md-9 flex">
-            <span class="text-h4 q-mr-sm">
+        <div class="col-12 col-md-9 flex q-my-md">
+            <span class="text-h4">
                {{ course.courseCode }} {{ course.courseName }}
             </span>
             <q-space/>
@@ -47,15 +47,7 @@
             <div class="col-12 q-my-md text-body1">{{course.description}}</div>
         </div>
         <div class="col-12 col-md-9 q-mt-md">
-            <index-detail-table/>
-            <!-- <q-table
-            class="my-sticky-header-table"
-            flat bordered
-            title="Indexes"
-            :rows="rows"
-            :columns="columns"
-            row-key="name"
-            /> -->
+            <IndexTable :indexes="course.schedule"/>
         </div>
     </div>
 </template>
@@ -65,12 +57,13 @@ import { onMounted } from 'vue';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useSchedules } from '@/stores/schedules.js'
-import IndexDetailTable from '../components/details/indexDetailTable.vue';
+import IndexTable from '../components/details/IndexTable.vue';
 
 const route = useRoute()
 const scheduleStore = useSchedules()
 const isLoading = ref(true)
 const isValid = ref(false)
+const course = ref(null)
 
 onMounted(async () => {
     console.log(route.params)
@@ -88,35 +81,4 @@ onMounted(async () => {
     isLoading.value = false
 })
 
-const course = ref(null)
-
-const columns = [
-  { name: 'name',
-    required: true,
-    label: 'Index',
-    align: 'left',
-    field: row => row.index,
-    format: val => `${val}`,
-    sortable: true
-  },
-  { name: 'calories', align: 'center', label: 'Calories', field: 'calories', sortable: true },
-  { name: 'fat', label: 'Fat (g)', field: 'fat', sortable: true },
-  { name: 'carbs', label: 'Carbs (g)', field: 'carbs' },
-  { name: 'protein', label: 'Protein (g)', field: 'protein' },
-  { name: 'sodium', label: 'Sodium (mg)', field: 'sodium' },
-  { name: 'calcium', label: 'Calcium (%)', field: 'calcium', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) },
-  { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) }
-]
-const rows = [
-  {
-    index: '10423',
-    type: "LEC",
-    days: "Mon|Tues|Wed",
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: '14%',
-    iron: '1%'
-  },
-]
 </script>
