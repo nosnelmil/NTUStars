@@ -157,6 +157,7 @@ export const useTimetableStore = defineStore('timetable', {
           isLoading: true,
           courseCode: "custom",
           courseName: "Custom Events",
+          au: 0,
           index: "",
           backgroundColor: "",
         }
