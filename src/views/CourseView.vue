@@ -56,7 +56,7 @@
                 </div>
             </template>
             <template v-else>
-                not found
+                <NotFoundSection />
             </template>
         </template>
     </div>
@@ -69,6 +69,7 @@ import { useRoute } from 'vue-router';
 import { useSchedules } from '@/stores/schedules.js'
 import IndexTable from '../components/details/IndexTable.vue';
 import CourseViewSkeleton from './CourseViewSkeleton.vue';
+import NotFoundSection from '../components/layout/NotFoundSection.vue';
 
 const route = useRoute()
 const scheduleStore = useSchedules()
