@@ -3,8 +3,8 @@ import { Notify } from 'quasar';
 import { parseCourseInfoFromDB } from '../composables/parsers';
 import { codeDoesNotExist } from '../composables/alerts/store-alerts';
 function firebaseEndpoint(functionName){
-  // return `https://${functionName}-prm4upiq5q-de.a.run.app`
-  return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
+  return `https://${functionName}-prm4upiq5q-de.a.run.app`
+  // return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
 }
 
 
