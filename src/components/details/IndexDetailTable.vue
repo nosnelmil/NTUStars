@@ -22,7 +22,7 @@
 
 <script setup>
 import { useSchedules } from '../../stores/schedules';
-
+import { parseStartTime, parseEndTime, parseWeeks } from '../../composables/parsers';
 const scheduleStore = useSchedules()
 const props = defineProps(["rows"])
 const columns = [
@@ -30,10 +30,9 @@ const columns = [
   { name: 'type', label: 'Type', field: 'type', sortable:true },
   { name: 'group', align: 'center', label: 'Group', field: 'group', sortable: true },
   { name: 'venue', label: 'Venue', field: 'venue' },
-  { name: 'time', label: 'Time', field: 'time', sortable: true, format: val => `${scheduleStore.parseStart(val)} - ${scheduleStore.parseEnd(val)}`},
-  { name: 'weeks', label: 'Weeks', field: 'weeks', sortable:true, format: val => scheduleStore.parseWeeks(val)},
+  { name: 'time', label: 'Time', field: 'time', sortable: true, format: val => `${parseStartTime(val)} - ${parseEndTime(val)}`},
+  { name: 'weeks', label: 'Weeks', field: 'weeks', sortable:true, format: val => parseWeeks(val)},
 ]
-
 
 
 </script>

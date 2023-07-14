@@ -2,7 +2,7 @@
 <q-item 
   clickable 
   v-ripple
-  :to="course.courseCode == 'custom' ? false : `/courses/${semester}/${course.courseCode}`"
+  @click="onListItemClicked"
   target="_blank"> 
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
@@ -47,12 +47,18 @@
 </template>
 
 <script setup>
-import { useTimetableStore } from '../../stores/timetable';
-
+import { useRouter } from 'vue-router';
+const router = useRouter()
 const props = defineProps(["course", "semester"])
 const emits = defineEmits(["handleRemove"])
-function onRemoveClicked(){
+function onRemoveClicked(e){
+  e.stopPropagation();
   emits("handleRemove", props.course)
+}
+
+function onListItemClicked(e){
+  const routeData = router.resolve({name: 'coursedetails', params: {details: [props.semester, props.course.courseCode]}});
+  window.open(routeData.href, '_blank');
 }
 
 </script>
