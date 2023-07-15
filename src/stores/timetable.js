@@ -104,7 +104,7 @@ export const useTimetableStore = defineStore('timetable', {
       }
 
       // get a color for this course
-      var backgroundColor = this.colors.pop() || "#E65100";
+      var backgroundColor = this.getRandomColor() || "#E65100";
      
       // store ids in state so its easier to delete later
       // instantiate
@@ -161,7 +161,7 @@ export const useTimetableStore = defineStore('timetable', {
           index: "",
           backgroundColor: "",
         }
-        color = this.colors.pop()
+        color = this.getRandomColor()
       } 
       else{
         color = this.coursesAdded[semester]["custom"].backgroundColor
