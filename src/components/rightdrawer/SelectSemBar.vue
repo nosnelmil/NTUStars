@@ -3,6 +3,7 @@
     v-model="model" 
     label="Semesters"
     filled 
+    :color="settingsStore.darkMode ? 'white' : 'primary'"
     :options="options" 
     @filter="filterFn"
     @update:model-value="handleSemSelect"
@@ -23,9 +24,11 @@
 import { ref, onMounted} from 'vue'
 import { useSchedules } from '@/stores/schedules';
 import { useTimetableStore } from '@/stores/timetable';
+import { useSettingsStore } from '@/stores/settings';
 
 const props = defineProps(["isError"])
 const schedulesStore = useSchedules()
+const settingsStore = useSettingsStore()
 const isLoadingSems = ref(false)
 const model = ref(null)
 const options = ref(null)

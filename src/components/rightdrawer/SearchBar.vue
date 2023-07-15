@@ -10,6 +10,7 @@
         label="Enter Course Code"
         debounce="500"
         filled
+        :color="settingsStore.darkMode ? 'white': 'primary'"
         :loading="isLoading"
         placeholder="Search"
         :hint="isLoading ? 'Searching for a new course code might take awhile' : 'Try searching SC1005'"
@@ -31,11 +32,13 @@
 <script setup>
 import { ref } from 'vue';
 import { useTimetableStore } from '@/stores/timetable.js'
+import { useSettingsStore } from '@/stores/settings.js'
 import { validateCourseCode } from '@/composables/validator.js'
 
 const form = ref(null)
 const isLoading = ref(false)
 const timetableStore = useTimetableStore()
+const settingsStore = useSettingsStore()
 const search = ref(null)
 async function onSubmit(){
   if(!search.value) return

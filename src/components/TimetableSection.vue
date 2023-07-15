@@ -170,6 +170,9 @@ function handleMouseLeave(mouseLeaveInfo){
 </style>
 
 <style>
+.body--dark{
+  --fc-border-color: #2c2b42 !important;
+}
 .lighten{
   filter: brightness(0.7);
   transition: filter .1s linear;
