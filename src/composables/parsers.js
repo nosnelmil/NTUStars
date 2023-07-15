@@ -2,6 +2,7 @@ import { getCurrentDay } from "./helper"
 
 export function parseCourseInfoFromDB(data){
   const {schedule, courseName, courseCode, au} = data
+  // instantiate result object
   var result = {
     lectures: [],
     lessons: {},
@@ -9,12 +10,14 @@ export function parseCourseInfoFromDB(data){
     courseCode: courseCode,
     au: au
   }
+  // Prevent duplicate lectures from being added
   var lectureAdded = false
   for(const [index, indexSchedule] of Object.entries(schedule)){
-    result[index] = []
     for(var i=0; i<indexSchedule.length; i++){
       const classData = indexSchedule[i]
+      // skip if have already added lecture classes
       if(lectureAdded && classData.type == "LEC/STUDIO") continue;
+      // create class info object (A class in an index)
       let classInfo = {
         id:  `${courseCode} ${index} ${i}`,
         groupid: courseCode+index,
@@ -30,6 +33,7 @@ export function parseCourseInfoFromDB(data){
         start: getCurrentDay(Day[classData.day]) + parseStartTime(classData.time),
         end: getCurrentDay(Day[classData.day]) + parseEndTime(classData.time),
       }
+      // if its a lecture, remove unnecessary info
       if(classData.type == "LEC/STUDIO"){
         classInfo.groupid = null
         classInfo.index = ""

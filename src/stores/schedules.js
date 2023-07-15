@@ -26,14 +26,16 @@ export const useSchedules = defineStore('schedules', {
         return null
       }
     },
-    getSemesters: (state) => Object.entries(state.semesters).map(([key,value]) => { return ({label: value, value: key})})
+    getSemesters: (state) => Object.entries(state.semesters)
+                                .map(([key,value]) => { return ({label: value, value: key})})
+                                .sort((a, b) => b.label.localeCompare(a.label))
     
   },
   actions: {
     async fetchCourseSchedule(semester, code){
       const courseCode = code.toUpperCase();
       let courseInfo = this.getSchedule(semester, courseCode)
-      if(courseInfo && semester in courseInfo){
+      if(courseInfo){
         return courseInfo
       }else{
         // get from database
