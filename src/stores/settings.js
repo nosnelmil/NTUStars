@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
+import { Dark } from 'quasar'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => {
     return {
       openedHelpBefore: false,
       leftDrawerOpen: true,
+      darkMode: false
     }
   },
   
@@ -18,8 +20,16 @@ export const useSettingsStore = defineStore('settings', {
     }
   },
   actions: {
+    setSettings(){
+      Dark.set(this.darkMode)
+    },
     toggleLeftDrawer(){
       this.leftDrawerOpen = !this.leftDrawerOpen
+    },
+    toggelDarkMode(){
+      Dark.toggle()
+      this.darkMode = Dark.isActive
+      return Dark.isActive
     }
   },
   persist: true

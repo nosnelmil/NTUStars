@@ -11,7 +11,7 @@ export const useTimetableStore = defineStore('timetable', {
       coursesAdded: {},
       preview: {},
       timeTable: {}, // the one thats showing on the screen
-      colors: ['#EF5350', '#29B6F6', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#FF7043', '#8D6E63', '#42A5F5', '#26C6DA', '#26A69A', '#9CCC65', '#FFA726'],
+      colors: ['#EF5350', '#29B6F6', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#9CCC65', '#FFA726', '#FF7043', '#8D6E63', '#42A5F5', '#26C6DA', '#26A69A'],
       isLoading: false,
       semester: null,
     }

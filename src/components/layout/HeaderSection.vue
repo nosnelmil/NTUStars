@@ -12,6 +12,13 @@
     <q-btn stretch dense flat label="Changes" @click="toggleLeftDrawer" class="text-capitalize q-px-md"/>
     <q-btn stretch dense flat label="Help" @click="toggleHelpModal" class="text-capitalize q-px-md"/>
     <DetailsSearchBar class="q-mr-md"/>
+    <q-toggle
+        v-model="darkMode"
+        color="black"
+        checked-icon="dark_mode"
+        unchecked-icon="brightness_5"
+        @update:model-value="onDarkModeToggle"
+    />
     <q-btn v-if="showRightDrawer" stretch dense flat icon="menu" @click="toggleRightDrawer"  class="q-px-md"/>
   </q-toolbar>
 </template>
@@ -19,9 +26,17 @@
 <script setup>
 import NTUStarsIcon from '@/assets/NTUStars-icon.png'
 import DetailsSearchBar from './DetailsSearchBar.vue';
-
+import { useSettingsStore } from '../../stores/settings';
+import { ref } from 'vue'
+const settingsStore = useSettingsStore()
 const props = defineProps(['showRightDrawer'])
 const emits = defineEmits(['toggleHelpModal', 'toggelRightDrawer', 'toggleLeftDrawer'])
+
+const darkMode = ref(settingsStore.darkMode)
+
+function onDarkModeToggle(val){
+  darkMode.val = settingsStore.toggelDarkMode()
+}
 
 function toggleHelpModal(){
   emits("toggleHelpModal")

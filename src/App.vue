@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hhh LpR fff">
+  <q-layout view="hHh LpR fff">
     <q-header class="bg-primary text-white">
       <HeaderSection 
         @toggle-right-drawer="rightDrawerOpen = !rightDrawerOpen"
@@ -65,12 +65,17 @@ import HelpStepper from './components/HelpStepper.vue';
 import SemCourseSelector from './components/rightdrawer/SemCourseSelector.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
 import { watch } from 'vue';
+import { onMounted } from 'vue';
 
 const settingsStore = useSettingsStore()
 const rightDrawerOpen = ref(false)
 const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
 const showRightDrawer = ref(true)
 const route = useRoute()
+
+onMounted(() => {
+  settingsStore.setSettings()
+})
 
 watch(() => route.fullPath, () => {
   if(route.fullPath == '/'){
