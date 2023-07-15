@@ -11,7 +11,7 @@ export const useTimetableStore = defineStore('timetable', {
       coursesAdded: {},
       preview: {},
       timeTable: {}, // the one thats showing on the screen
-      colors: ['#EF5350', '#29B6F6', '#EC407A', '#AB47BC', '#7E57C2', '#5C6BC0', '#66BB6A', '#FFCA28', '#9CCC65', '#FFA726', '#FF7043', '#8D6E63', '#42A5F5', '#26C6DA', '#26A69A'],
+      colors: ['#0D47A1', '#E65100', '#FF6F00', '#F57F17', '#827717', '#33691E', '#1B5E20', '#B71C1C', '#880E4F', '#4A148C', '#311B92', '#1A237E', '#01579B', '#006064', '#004D40', '#BF360C', '#3E2723'],
       isLoading: false,
       semester: null,
     }
@@ -104,7 +104,7 @@ export const useTimetableStore = defineStore('timetable', {
       }
 
       // get a color for this course
-      var backgroundColor = this.colors.pop() || "#5C6BC0";
+      var backgroundColor = this.colors.pop() || "#E65100";
      
       // store ids in state so its easier to delete later
       // instantiate
@@ -312,7 +312,14 @@ export const useTimetableStore = defineStore('timetable', {
       newDay.setDate(day)
       const tm = parseDate(newDay)
       return tm.date
-    },    
+    },
+    getRandomColor(){
+      if(this.colors.length == 0) return null
+      const randomIndex = Math.floor(Math.random()*this.colors.length)
+      const color = this.colors.at(randomIndex)
+      this.colors.splice(randomIndex, 1)
+      return color
+    }     
   },
   persist: 
   {
