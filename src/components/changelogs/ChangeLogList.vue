@@ -39,6 +39,11 @@ import ChangeLogItem from './ChangeLogItem.vue';
 
 const changes = [
     {
+        title: "Dark Mode",
+        dateTime: formatDateTime("2023-07-14", "16:15"),
+        description: "Finally some comfort for your eyes!" 
+    },
+    {
         title: "Course details now available!",
         dateTime: formatDateTime("2023-07-14", "16:15"),
         description: "You can now view course details by clicking on the courses you have added on the right or by using the search bar above." 
