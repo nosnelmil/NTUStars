@@ -1,6 +1,6 @@
 <template>
   <div class="col-12 col-md-10 q-pa-md bg-body" style="max-height: 80vh; overflow-y: scroll;">
-    <FullCalendar ref="calendar" :options="calendarOptions"> 
+    <FullCalendar ref="calendar" :options="calendarOptions" style="min-width:700px;"> 
       <template v-slot:eventContent='{event: {extendedProps}}' class="lighten">
         <div class="text-left q-pa-xs" style="height: 100%;">
             <div class="text-bold ellipsis">
