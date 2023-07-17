@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { Notify } from 'quasar';
 import { parseCourseInfoFromDB } from '../composables/parsers';
-import { codeDoesNotExist } from '../composables/alerts/store-alerts';
-function firebaseEndpoint(functionName){
-  return `https://${functionName}-prm4upiq5q-de.a.run.app`
-  // return `http://127.0.0.1:5001/ntu-schedule-maker/asia-east1/${functionName}` // dev endpoint
-}
-
+import { codeDoesNotExist, errorFetchingSchedule } from '../composables/alerts/store-alerts';
 
 export const useSchedules = defineStore('schedules', {
   state: () => {
@@ -45,7 +40,7 @@ export const useSchedules = defineStore('schedules', {
         })
         try{
           const response = await fetch(
-            firebaseEndpoint("getschedule"),
+            import.meta.env.VITE_GETSCHEDULE_ENDPOINT,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -63,7 +58,7 @@ export const useSchedules = defineStore('schedules', {
             codeDoesNotExist(courseCode, semester)
           }
         }catch(e){
-          codeDoesNotExist(courseCode, semester, e)
+          errorFetchingSchedule(courseCode, semester, e)
         }
 
       }
@@ -73,7 +68,7 @@ export const useSchedules = defineStore('schedules', {
       if(Object.keys(this.semesters) >0) return
       try{
         const response = await fetch(
-          firebaseEndpoint("getsemesters"),
+          import.meta.env.VITE_GETSEMESTERS_ENDPOINT,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -101,7 +96,8 @@ export const useSchedules = defineStore('schedules', {
       const semester = sem.toUpperCase();
       const courseCode = code.toUpperCase();
       let courseInfo = this.getSchedule(semester, courseCode)
-      if(courseInfo && semester in courseInfo){
+      if(courseInfo && 'description' in courseInfo){
+        console.log("called")
         return courseInfo
       }else{
         // get from database
@@ -111,28 +107,22 @@ export const useSchedules = defineStore('schedules', {
         })
         try{
           const response = await fetch(
-            firebaseEndpoint("getcoursecontent"),
+            import.meta.env.VITE_GETCOURSECONTENT_ENDPOINT,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: reqBody
             })
           const data = await response.json()
+          console.log("called1", data)
           if(data){
             return data
           }else{
-            // error
-            Notify.create({
-              message: `${courseCode} does not exist for sem ${semester}`,
-              color: 'negative'
-            })
+            codeDoesNotExist(courseCode, semester)
             return null
           }
         }catch(e){
-          Notify.create({
-            message: `${courseCode} does not exist for sem ${semester}`,
-            color: 'negative'
-          })
+          errorFetchingSchedule(courseCode, semester, e)
           return null
         }
       }
