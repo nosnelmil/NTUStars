@@ -1,29 +1,25 @@
 <template>
-  <div class="subcontent">
-    <div class="row justify-center">
-      <div class="col-12 col-md-10 q-pa-md bg-body">
-        <FullCalendar ref="calendar" :options="calendarOptions"> 
-          <template v-slot:eventContent='{event: {extendedProps}}' class="lighten">
-            <div class="text-left q-pa-xs" style="height: 100%;">
-                <div class="text-bold ellipsis">
-                  {{ extendedProps.courseCode }} <span >{{ extendedProps.courseName }}</span>
-                </div>
-                <div class="calendar-body-text"> {{ extendedProps.index }}</div>
-                <div v-if="extendedProps.type" class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
-              <q-tooltip v-if="!(Object.keys(extendedProps).length == 0)">
-                <div>{{ extendedProps.courseCode }}</div>
-                <div>{{ extendedProps.courseName }}</div>
-                <div v-if="extendedProps.type"> Type: {{ extendedProps.type }}</div>
-                <div v-if="extendedProps.index"> Index: {{ extendedProps.index }}</div>
-                <div v-if="extendedProps.group"> Group: {{ extendedProps.group }}</div>
-                <div v-if="extendedProps.venue">Venue: {{ extendedProps.venue }}</div>
-                <div v-if="extendedProps.weeks"> Weeks: {{ extendedProps.weeks }}</div>
-              </q-tooltip>
+  <div class="col-12 col-md-10 q-pa-md bg-body" style="max-height: 80vh; overflow-y: scroll;">
+    <FullCalendar ref="calendar" :options="calendarOptions"> 
+      <template v-slot:eventContent='{event: {extendedProps}}' class="lighten">
+        <div class="text-left q-pa-xs" style="height: 100%;">
+            <div class="text-bold ellipsis">
+              {{ extendedProps.courseCode }} <span >{{ extendedProps.courseName }}</span>
             </div>
-          </template>
-        </FullCalendar>
-      </div>
-    </div>
+            <div class="calendar-body-text"> {{ extendedProps.index }}</div>
+            <div v-if="extendedProps.type" class="calendar-body-text">{{ extendedProps.type }} | {{ extendedProps.frequency }}</div>
+          <q-tooltip v-if="!(Object.keys(extendedProps).length == 0)">
+            <div>{{ extendedProps.courseCode }}</div>
+            <div>{{ extendedProps.courseName }}</div>
+            <div v-if="extendedProps.type"> Type: {{ extendedProps.type }}</div>
+            <div v-if="extendedProps.index"> Index: {{ extendedProps.index }}</div>
+            <div v-if="extendedProps.group"> Group: {{ extendedProps.group }}</div>
+            <div v-if="extendedProps.venue">Venue: {{ extendedProps.venue }}</div>
+            <div v-if="extendedProps.weeks"> Weeks: {{ extendedProps.weeks }}</div>
+          </q-tooltip>
+        </div>
+      </template>
+    </FullCalendar>
   </div>
 </template>
 

@@ -3,13 +3,18 @@ import { useSchedules } from './schedules'
 import { Notify } from 'quasar';
 import { createEventId } from '../composables/event-utils';
 
+const MAX_SHOWING_INDEX = 30
 
 export const useTimetableStore = defineStore('timetable', {
   state: () => {
     return {
       calenderApi: null,
       coursesAdded: {},
-      preview: {},
+      showingPreview: {},
+      maxShowingIndex: MAX_SHOWING_INDEX,
+      showingPreviewIndexCount: 1,
+      totalIndexCount: 0,
+      previewIndexes: {},
       timeTable: {}, // the one thats showing on the screen
       colors: ['#0D47A1', '#E65100', '#FF6F00', '#F57F17', '#827717', '#33691E', '#1B5E20', '#B71C1C', '#880E4F', '#4A148C', '#311B92', '#1A237E', '#01579B', '#006064', '#004D40', '#BF360C', '#3E2723'],
       isLoading: false,
@@ -22,9 +27,9 @@ export const useTimetableStore = defineStore('timetable', {
       return state.timeTable[state.semester]
     },
     getCourseCodeShowingPreview: (state) => {
-      if(state.semester in state.preview){
-        return state.preview[state.semester].length > 0
-          ? state.preview[state.semester][0].courseCode
+      if(state.semester in state.showingPreview){
+        return state.showingPreview[state.semester].length > 0
+          ? state.showingPreview[state.semester][0].courseCode
           : null
       }
     },
@@ -54,6 +59,15 @@ export const useTimetableStore = defineStore('timetable', {
       }else {
         return 0
       }
+    },
+    getShowingIndex: (state) => {
+      return (courseCode) => courseCode ? state.coursesAdded[state.semester][courseCode].index : null
+    },
+    getPreviewCourseCode: (state) => {
+      if(state.semester in state.showingPreview && state.showingPreview[state.semester].length > 0){
+        return state.showingPreview[state.semester][0].courseCode
+      }
+      return null
     }
   },
   
@@ -215,14 +229,22 @@ export const useTimetableStore = defineStore('timetable', {
           }
           this.timeTable[semester][courseCode]['lessons'] = []
         }
+        if(semester in this.showingPreview && this.showingPreview[semester].length > 0){
+          // remove from showingPreview if showingPreview is the deleted coursecode
+          if(courseCode == this.showingPreview[semester][0].courseCode){
+            this.resetPreview()
+            // reset all indexes
+            this.previewIndexes = {} 
+          }
+        }
       }else{
         for(const event of this.timeTable[semester][courseCode]['events']){
           calendar.getEventById(event.id).remove()
         }
         this.timeTable[semester][courseCode] = []
       }
-      // remove from preview if preview is the deleted coursecode
-      this.resetPreview()
+     
+
 
       const colorUsed = this.coursesAdded[semester][courseCode].backgroundColor
       this.returnColor(colorUsed)
@@ -234,48 +256,101 @@ export const useTimetableStore = defineStore('timetable', {
       const calendar = this.calenderApi.getApi().view.calendar
       const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
       const showing = this.coursesAdded[semester][courseCode]
-      const preview = []
+      const showingPreview = []
       this.resetPreview()
       if(courseInfo){
+        // track number of added preview events
+        this.totalIndexCount = 0
+        this.previewIndexes[showing.index] = true
         for(const [index, indexSchedule] of Object.entries(courseInfo.lessons)){
-          if (index == showing.index) continue
+          this.totalIndexCount += 1
+          if (index == showing.index) {
+            continue
+          }
+          if (this.showingPreviewIndexCount >= MAX_SHOWING_INDEX - 5){
+            this.previewIndexes[index] = false
+            continue
+          }
           for(const classInfo of indexSchedule){
             const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
-            preview.push(previewEvent)
+            showingPreview.push(previewEvent)
             calendar.addEvent(previewEvent)
           }
+          this.showingPreviewIndexCount += 1
+          this.previewIndexes[index] = true
         }
+        Notify.create({message: `Showing ${this.showingPreviewIndexCount} / ${this.totalIndexCount} available indexes`, type: "primary"})
       }
-      if(!preview.length){
+      if(!showingPreview.length){
         Notify.create({message: "There are no other indexes for this module.", type: "negative"})
       }
-      this.preview[semester] = preview
+      this.showingPreview[semester] = showingPreview
+    },
+    async addPreview(indexToAdd){
+      if(this.showingPreviewIndexCount >= MAX_SHOWING_INDEX){
+        Notify.create({message: "Previewing maximum number of indexes. Please remove other indexes from preview first!", type: "negative"})
+        return
+      }
+      const courseCode = this.getPreviewCourseCode
+      const scheduleStore = useSchedules()
+      const semester = this.semester
+      const calendar = this.calenderApi.getApi().view.calendar
+      const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
+      const showing = this.coursesAdded[semester][courseCode]
+      if(courseInfo){
+        for(const classInfo of courseInfo.lessons[indexToAdd]){
+          const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
+          this.showingPreview[semester].push(previewEvent)
+          calendar.addEvent(previewEvent)
+        }
+        this.previewIndexes[indexToAdd] = true
+        this.showingPreviewIndexCount += 1
+      }
+    },
+    removePreview(indexToRemove){
+      const semester = this.semester
+      if(!(semester in this.showingPreview)) return
+      const calendar = this.calenderApi.getApi().view.calendar
+      for(var i=this.showingPreview[semester].length-1; i>=0; i--){
+        const event = this.showingPreview[semester][i]
+        if(event.index != indexToRemove) continue
+        calendar.getEventById(event.id)?.remove()
+        this.showingPreview[semester].splice(i, 1)
+      }
+      this.previewIndexes[indexToRemove] = false
+      this.showingPreviewIndexCount -= 1
     },
     resetPreview(){
       const semester = this.semester
-      if(!(semester in this.preview)) return
+      if(!(semester in this.showingPreview)) return
       const calendar = this.calenderApi.getApi().view.calendar
-      for(const event of this.preview[semester]){
+      for(const event of this.showingPreview[semester]){
         calendar.getEventById(event.id)?.remove()
       }
-      this.preview[semester] = []
+      this.showingPreview[semester] = []
+      this.previewIndexes = {}
+      this.showingPreviewIndexCount = 1
+      this.totalIndexCount = 0
     },
     swapIndex(courseCode, newIndex){
       const semester = this.semester
       const calendar = this.calenderApi.getApi().view.calendar
       // get event object of newIndex
-      const newLessons = this.preview[semester].filter(e => e.index == newIndex)
-      // remove preview
+      const newLessons = this.showingPreview[semester].filter(e => e.index == newIndex)
+      // remove showingPreview
       this.resetPreview()
-      // reset preview properties
+      
+      // reset showingPreview properties
       newLessons.forEach(e => {
         e.isPreview = false
         e.classNames = ['lesson-body']
         e.groupId = null
       })
       // remove oldIndex
+      var oldIndex = ""
       for (const event of this.timeTable[semester][courseCode]['lessons']){
         calendar.getEventById(event.id).remove()
+        oldIndex = event.index
       }
       // add back to calendar
       const newEvents = []
@@ -289,6 +364,12 @@ export const useTimetableStore = defineStore('timetable', {
     },
     setSemester(semesterKey){
       this.semester = semesterKey
+    },
+    setallPreviewIndexes(courseInfo){
+      for(const [index, indexSchedule] of Object.entries(courseInfo.lessons)){
+        if(!(index in this.previewIndexes))
+        this.previewIndexes[index] = false
+      }
     },
     reset(){
       const calenderApi = this.calenderApi
@@ -325,7 +406,10 @@ export const useTimetableStore = defineStore('timetable', {
   {
     afterRestore: (ctx) => {
       // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
-      ctx.store.preview = {}
+      ctx.store.showingPreview = {}
+      ctx.store.previewIndexes = {}
+      ctx.store.showingPreviewIndexCount = 1
+      ctx.store.totalIndexCount = 0
     },
   }
 })

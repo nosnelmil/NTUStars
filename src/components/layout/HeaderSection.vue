@@ -2,8 +2,8 @@
   <q-toolbar>
     <q-toolbar-title class="brand-font">
       <q-btn flat class="title" :to="'/'">
-        <q-avatar class="q-mb-xs">
-          <img :src="NTUStarsIcon">
+        <q-avatar class="q-mb-xs q-mr-xs">
+          <q-img :src="NTUStarsIcon" height="30px" fit="contain"/>
         </q-avatar>
           NTU Stars
       </q-btn >
