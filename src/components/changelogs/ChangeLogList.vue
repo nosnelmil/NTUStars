@@ -41,9 +41,9 @@ import { useSettingsStore } from '../../stores/settings';
 const settingsStore = useSettingsStore()
 const changes = [
     {
-        title: "Index Selection Improvement *In progress",
-        dateTime: formatDateTime("2023-07-21", "13:30"),
-        description: "Introducing a feature soon that would enable users to save specific indexes for easy previewing, as well as streamlining the process of previewing other indexes." 
+        title: "Index Selection Improvement",
+        dateTime: formatDateTime("2023-07-21", "22:30"),
+        description: "Users are now able to save specific indexes for easy previewing, the process of previewing other indexes has been streamlined as well." 
     },
     {
         title: "Index Selection",
