@@ -35,7 +35,7 @@ import { computed, ref } from 'vue'
 
 const timetableStore = useTimetableStore()
 const MAX_PER_PAGE = 20
-const numberOfPages = computed(() => Object.keys(timetableStore.previewIndexes).length / MAX_PER_PAGE)
+const numberOfPages = computed(() => Object.keys(timetableStore.previewIndexes).length / MAX_PER_PAGE+1)
 const currentPage = ref(1)
 const showingPreviewIndexes = computed(() => 
   splice(
