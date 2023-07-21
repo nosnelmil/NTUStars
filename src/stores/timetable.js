@@ -3,7 +3,7 @@ import { useSchedules } from './schedules'
 import { Notify } from 'quasar';
 import { createEventId } from '../composables/event-utils';
 
-const MAX_SHOWING_INDEX = 30
+const MAX_SHOWING_INDEX = 25
 
 export const useTimetableStore = defineStore('timetable', {
   state: () => {
@@ -14,6 +14,7 @@ export const useTimetableStore = defineStore('timetable', {
       coursesAdded: {},
       // Preview that are currently showing
       showingPreview: {},
+      previewCourseCode: null,
       // Constant to set the maximum index that can be previewed
       maxShowingIndex: MAX_SHOWING_INDEX,
       // Total number of Indexes showing as preview for a selected course code
@@ -22,6 +23,8 @@ export const useTimetableStore = defineStore('timetable', {
       totalIndexCount: 0,
       // Indexes for preview. Can be set to true(showing on the timetable) or false(hidden)
       previewIndexes: {},
+      // Indexes that users saved
+      savedPreviewIndexes: {},
       // All Events objects that are shown on the timetable
       timeTable: {},
       // All possible event colors left
@@ -74,10 +77,21 @@ export const useTimetableStore = defineStore('timetable', {
       return (courseCode) => courseCode ? state.coursesAdded[state.semester][courseCode].index : null
     },
     getPreviewCourseCode: (state) => {
-      if(state.semester in state.showingPreview && state.showingPreview[state.semester].length > 0){
-        return state.showingPreview[state.semester][0].courseCode
-      }
-      return null
+      // if(state.semester in state.showingPreview && state.showingPreview[state.semester].length > 0){
+      //   return state.showingPreview[state.semester][0].courseCode
+      // }
+      return state.previewCourseCode
+    },
+    getPreviewIndexes: (state) => {
+      return Object.entries(state.previewIndexes)
+    },
+    getSavedPreviewIndexes: (state) => 
+      state.savedPreviewIndexes[state.semester]?.[state.previewCourseCode]
+        ? Object.entries(state.savedPreviewIndexes[state.semester][state.previewCourseCode])
+        : [],
+    
+    isIndexPreviewSaved: (state) => {
+      return (index) => state.savedPreviewIndexes[state.semester]?.[state.previewCourseCode]?.[index]
     }
   },
   
@@ -117,7 +131,7 @@ export const useTimetableStore = defineStore('timetable', {
         backgroundColor: "",
         au: "",
         courseCode: courseCode
-      }
+      };
       // retrieve the course scheudle
       const scheduleStore = useSchedules()
       const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
@@ -135,7 +149,7 @@ export const useTimetableStore = defineStore('timetable', {
       (this.timeTable[semester] ??= {})[courseCode] = {
         "lectures": [],
         "lessons": [],
-      }
+      };
 
       // add the lecture slots for this course
       for(var classInfo of courseInfo.lectures){
@@ -270,14 +284,17 @@ export const useTimetableStore = defineStore('timetable', {
       this.resetPreview()
       if(courseInfo){
         // track number of added preview events
+        this.previewCourseCode = courseCode
         this.totalIndexCount = 0
-        this.previewIndexes[showing.index] = true
+        this.previewIndexes[showing.index] = true;
+        (this.savedPreviewIndexes[semester] ??= {})[courseCode] ??= {};
         for(const [index, indexSchedule] of Object.entries(courseInfo.lessons)){
           this.totalIndexCount += 1
           if (index == showing.index) {
             continue
           }
-          if (this.showingPreviewIndexCount >= MAX_SHOWING_INDEX - 5){
+          if (this.showingPreviewIndexCount >= MAX_SHOWING_INDEX && !this.isIndexPreviewSaved(index)){
+            // skip adding index
             this.previewIndexes[index] = false
             continue
           }
@@ -296,11 +313,13 @@ export const useTimetableStore = defineStore('timetable', {
       }
       this.showingPreview[semester] = showingPreview
     },
-    async addPreview(indexToAdd){
-      if(this.showingPreviewIndexCount >= MAX_SHOWING_INDEX){
-        Notify.create({message: "Previewing maximum number of indexes. Please remove other indexes from preview first!", type: "negative"})
-        return
-      }
+
+    // Temp previews are maintain with the help of paginations
+    async addTempPreviews(indexesToAdd){
+      // if(this.showingPreviewIndexCount >= MAX_SHOWING_INDEX){
+      //   Notify.create({message: "Previewing maximum number of indexes. Please remove other indexes from preview first!", type: "negative"})
+      //   return
+      // }
       const courseCode = this.getPreviewCourseCode
       const scheduleStore = useSchedules()
       const semester = this.semester
@@ -308,28 +327,45 @@ export const useTimetableStore = defineStore('timetable', {
       const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
       const showing = this.coursesAdded[semester][courseCode]
       if(courseInfo){
-        for(const classInfo of courseInfo.lessons[indexToAdd]){
-          const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
-          this.showingPreview[semester].push(previewEvent)
-          calendar.addEvent(previewEvent)
+        for(const indexToAdd of indexesToAdd){
+          for(const classInfo of courseInfo.lessons[indexToAdd]){
+            const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
+            this.showingPreview[semester].push(previewEvent)
+            calendar.addEvent(previewEvent)
+          }
+          this.previewIndexes[indexToAdd] = true
+          this.showingPreviewIndexCount += 1
         }
-        this.previewIndexes[indexToAdd] = true
-        this.showingPreviewIndexCount += 1
       }
     },
-    removePreview(indexToRemove){
+    // remove previews excluding saved ones from the timetable (used during the change in pages in preview list)
+    removeTempPreviews(indexesToRemove){
       const semester = this.semester
       if(!(semester in this.showingPreview)) return
       const calendar = this.calenderApi.getApi().view.calendar
-      for(var i=this.showingPreview[semester].length-1; i>=0; i--){
-        const event = this.showingPreview[semester][i]
-        if(event.index != indexToRemove) continue
-        calendar.getEventById(event.id)?.remove()
-        this.showingPreview[semester].splice(i, 1)
-      }
-      this.previewIndexes[indexToRemove] = false
-      this.showingPreviewIndexCount -= 1
+      const indexesToRemoveSet = new Set(indexesToRemove)
+        for(var i=this.showingPreview[semester].length-1; i>=0; i--){
+          const event = this.showingPreview[semester][i]
+          // if the event is saved or showing
+          if(!indexesToRemoveSet.has(event.index)) continue
+          calendar.getEventById(event.id)?.remove()
+          this.showingPreview[semester].splice(i, 1)
+          this.showingPreviewIndexCount -= 1
+          this.previewIndexes[event.index] = false
+        }
     },
+    // Saved preview are previews that are selected by users
+    async addToSavePreview(indexToAdd, addToCalendar=false){
+      if(addToCalendar) this.addTempPreviews([indexToAdd]);
+      ((this.savedPreviewIndexes[this.semester] ??= {})[this.previewCourseCode] ??= {})[indexToAdd] = true;
+    },
+    async removeFromSavePreview(indexToAdd, removeFromCalendar=false){
+      if(removeFromCalendar) this.removeTempPreviews([indexToAdd]);
+      if(!!this.savedPreviewIndexes[this.semester]?.[this.previewCourseCode]?.[indexToAdd]){
+        delete this.savedPreviewIndexes[this.semester][this.previewCourseCode][indexToAdd]
+      }
+    },
+    // Remove all previews included saved ones
     resetPreview(){
       const semester = this.semester
       if(!(semester in this.showingPreview)) return
@@ -341,7 +377,9 @@ export const useTimetableStore = defineStore('timetable', {
       this.previewIndexes = {}
       this.showingPreviewIndexCount = 1
       this.totalIndexCount = 0
+      this.previewCourseCode = null
     },
+    // swap two given indexes
     swapIndex(courseCode, newIndex){
       const semester = this.semester
       const calendar = this.calenderApi.getApi().view.calendar
@@ -372,38 +410,32 @@ export const useTimetableStore = defineStore('timetable', {
       // update added course index
       this.coursesAdded[semester][courseCode].index = newIndex
     },
+    // set the value of semester
     setSemester(semesterKey){
       this.semester = semesterKey
     },
-    setallPreviewIndexes(courseInfo){
-      for(const [index, indexSchedule] of Object.entries(courseInfo.lessons)){
-        if(!(index in this.previewIndexes))
-        this.previewIndexes[index] = false
-      }
-    },
+    // reset the calendar
     reset(){
       const calenderApi = this.calenderApi
+      const savedPreviewIndexes = this.savedPreviewIndexes
       const events = this.calenderApi.getApi().view.calendar.getEvents()
       for(const event of events){
         event.remove()
       }
       this.$reset()
+      this.savedPreviewIndexes = savedPreviewIndexes
       this.setCalendarApi(calenderApi)
     },
+    // resize the calendar
     resize(){
       if(!this.calenderApi) return
       this.calenderApi.getApi().view.calendar.updateSize()
     },
+    // Return back a color to the state
     returnColor(color){
       this.colors.push(color)
     },
-    getCurrentDay (day) {
-      const CURRENT_DAY = new Date("2023-05-01")
-      const newDay = new Date(CURRENT_DAY)
-      newDay.setDate(day)
-      const tm = parseDate(newDay)
-      return tm.date
-    },
+    // Get a random color from the state (placed here so it wont be called during store initiation?)
     getRandomColor(){
       if(this.colors.length == 0) return null
       const randomIndex = Math.floor(Math.random()*this.colors.length)
@@ -420,6 +452,8 @@ export const useTimetableStore = defineStore('timetable', {
       ctx.store.previewIndexes = {}
       ctx.store.showingPreviewIndexCount = 1
       ctx.store.totalIndexCount = 0
+      ctx.store.maxShowingIndex = MAX_SHOWING_INDEX
+      ctx.store.previewCourseCode = null
     },
   }
 })

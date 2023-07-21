@@ -16,7 +16,8 @@
       @show="useTimetableStore().resize()"
       @hide="useTimetableStore().resize()"
       > 
-      <ChangeLogList />
+      <!-- <ChangeLogList /> -->
+      <PreviewListSection />
       <div class="q-mini-drawer-hide absolute" style="top: 15px; right: -17px">
         <q-btn
           dense
@@ -66,6 +67,7 @@ import SemCourseSelector from './components/rightdrawer/SemCourseSelector.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
 import { watch } from 'vue';
 import { onMounted } from 'vue';
+import PreviewListSection from './components/preview/PreviewListSection.vue';
 
 const settingsStore = useSettingsStore()
 const rightDrawerOpen = ref(false)

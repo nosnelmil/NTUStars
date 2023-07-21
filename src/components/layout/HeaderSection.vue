@@ -9,7 +9,7 @@
       </q-btn >
     </q-toolbar-title>
     <!-- <q-btn stretch dense flat class="q-px-md text-capitalize" label="Courses" @click="$q.notify({message:'Page under construction!'})"/> -->
-    <q-btn stretch dense flat label="Changes" @click="toggleLeftDrawer" class="text-capitalize q-px-md"/>
+    <q-btn stretch dense flat label="changes" @click="toggleLeftDrawer" class="text-capitalize q-px-md"/>
     <q-btn stretch dense flat label="Help" @click="toggleHelpModal" class="text-capitalize q-px-md"/>
     <DetailsSearchBar class="q-mr-md"/>
     <q-toggle
