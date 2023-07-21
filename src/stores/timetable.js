@@ -8,16 +8,26 @@ const MAX_SHOWING_INDEX = 30
 export const useTimetableStore = defineStore('timetable', {
   state: () => {
     return {
+      // Full calendar api
       calenderApi: null,
+      // Courses that has been added: Used by right sidebar
       coursesAdded: {},
+      // Preview that are currently showing
       showingPreview: {},
+      // Constant to set the maximum index that can be previewed
       maxShowingIndex: MAX_SHOWING_INDEX,
+      // Total number of Indexes showing as preview for a selected course code
       showingPreviewIndexCount: 1,
+      // Total number of availble indexes for the course selected for preview
       totalIndexCount: 0,
+      // Indexes for preview. Can be set to true(showing on the timetable) or false(hidden)
       previewIndexes: {},
-      timeTable: {}, // the one thats showing on the screen
+      // All Events objects that are shown on the timetable
+      timeTable: {},
+      // All possible event colors left
       colors: ['#0D47A1', '#E65100', '#FF6F00', '#F57F17', '#827717', '#33691E', '#1B5E20', '#B71C1C', '#880E4F', '#4A148C', '#311B92', '#1A237E', '#01579B', '#006064', '#004D40', '#BF360C', '#3E2723'],
       isLoading: false,
+      // The overall selected semester
       semester: null,
     }
   },
