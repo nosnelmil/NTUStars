@@ -41,6 +41,11 @@ import { useSettingsStore } from '../../stores/settings';
 const settingsStore = useSettingsStore()
 const changes = [
     {
+        title: "Index Selection Improvement *In progress",
+        dateTime: formatDateTime("2023-07-21", "13:30"),
+        description: "Introducing a feature soon that would enable users to save specific indexes for easy previewing, as well as streamlining the process of previewing other indexes." 
+    },
+    {
         title: "Index Selection",
         dateTime: formatDateTime("2023-07-17", "12:40"),
         description: "Now you can select which index you would like to preview on your calendar. This means that you can now add CC modules to your timetable, although it might take a few seconds to load. Also, please note that your selection choices are not saved. We are working on saving your selection choices." 
