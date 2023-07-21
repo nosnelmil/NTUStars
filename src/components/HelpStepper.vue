@@ -4,7 +4,7 @@
     vertical
     flat
     header-nav
-    color="primary"
+    :color="settingsStore.darkMode ? 'white': 'primary'"
     animated
   >
     <q-step
@@ -13,6 +13,7 @@
       :done="step > 1"
       done-icon='none'
       active-icon='none'
+      :color="settingsStore.darkMode ? 'white': 'primary'"
     >
       Welcome to NTU Stars! <br>
       This website hopes to alleviate the pain of planning your timetable.
@@ -25,7 +26,7 @@
       <br>
       Start by selecting a semester on the right <q-icon name="east"/>
       <q-stepper-navigation>
-        <q-btn @click="step = 2" color="primary" label="Continue" />
+        <q-btn @click="step = 2" :color="'primary'" label="Continue" />
       </q-stepper-navigation>
     </q-step>
 
@@ -35,6 +36,7 @@
       :done="step > 2"
       done-icon='none'
       active-icon='none'
+      :color="settingsStore.darkMode ? 'white': 'primary'"
     >
       Start adding NTU courses by searching their course codes. 
       <br>
@@ -47,7 +49,7 @@
       <span class="text-caption text-subtitle2 text-grey-7">*working on a fix</span>
       
       <q-stepper-navigation>
-        <q-btn flat @click="step = 1" color="primary" label="Back" />
+        <q-btn flat @click="step = 1" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
         <q-btn @click="step = 3" color="primary" label="Continue" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -58,6 +60,7 @@
       :done="step > 3"
       done-icon='none'
       active-icon='none'
+      :color="settingsStore.darkMode ? 'white': 'primary'"
     >
       One of the key features is having the ability to view all possible indexes and see how they fit into your timetable. 
       <br>
@@ -65,7 +68,7 @@
       You can do this by clicking on an event and choosing a different index to swap to.
       <q-img :src="demo1" class="q-my-md"/>
       <q-stepper-navigation>
-        <q-btn flat @click="step = 2" color="primary" label="Back" />
+        <q-btn flat @click="step = 2" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
         <q-btn @click="step = 4" color="primary" label="Continue" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -76,6 +79,7 @@
       :done="step > 4"
       done-icon='none'
       active-icon='none'
+      :color="settingsStore.darkMode ? 'white': 'primary'"
     >
       You can also add custom events by selecting the timeslots where your event will occur.
       <br>
@@ -83,7 +87,7 @@
       It's great for adding CC mods or important events that affect your schedule.
       <q-img :src="demo2" class="q-my-md"/>
       <q-stepper-navigation>
-        <q-btn flat @click="step = 3" color="primary" label="Back" />
+        <q-btn flat @click="step = 3" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
         <q-btn @click="step = 5" color="primary" label="Continue" class="q-ml-sm" />
       </q-stepper-navigation>
     </q-step>
@@ -93,6 +97,7 @@
       title="What's next?"
       done-icon='none'
       active-icon='none'
+      :color="settingsStore.darkMode ? 'white': 'primary'"
     >
       That's it for now! 
       <br>
@@ -102,11 +107,11 @@
       <br>
       More features and improvements are coming and it will be great to hear from you too!
       <br>
-      <q-btn outline color="primary" class="text-capitalize q-mt-md" icon="article" href='https://forms.gle/4CV1ZiXkRS87P8cT9' target="_blank" label="Feedback"/>
+      <q-btn outline :color="settingsStore.darkMode ? 'white': 'primary'" class="text-capitalize q-mt-md" icon="article" href='https://forms.gle/4CV1ZiXkRS87P8cT9' target="_blank" label="Feedback"/>
       <br>
-      <q-btn outline color="primary" class="text-capitalize q-mt-md" icon="bug_report" href='https://forms.gle/4jCSpWpvMUuWLBzh7' target="_blank" label="Bug Report"/>
+      <q-btn outline :color="settingsStore.darkMode ? 'white': 'primary'" class="text-capitalize q-mt-md" icon="bug_report" href='https://forms.gle/4jCSpWpvMUuWLBzh7' target="_blank" label="Bug Report"/>
       <q-stepper-navigation>
-        <q-btn flat @click="step = 4" color="primary" label="Back"  />
+        <q-btn flat @click="step = 4" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back"  />
         <q-btn color="primary" label="Finish" class="q-ml-sm" @click="handleFinish"/>
       </q-stepper-navigation>
     </q-step>
@@ -116,9 +121,11 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useSettingsStore } from '../stores/settings';
 import demo1 from '@/assets/demo1.gif'
 import demo2 from '@/assets/demo2.gif'
 
+const settingsStore = useSettingsStore()
 const emits = defineEmits(["handleFinish"])
 
 function handleFinish(){

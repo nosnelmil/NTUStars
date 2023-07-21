@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div :class="settingsStore.darkMode ? 'bg-dark': 'bg-white'">
         <q-list padding>
             <q-item>
                 <q-item-section>
@@ -36,7 +36,9 @@
 
 <script setup>
 import ChangeLogItem from './ChangeLogItem.vue';
+import { useSettingsStore } from '../../stores/settings';
 
+const settingsStore = useSettingsStore()
 const changes = [
     {
         title: "Index Selection",

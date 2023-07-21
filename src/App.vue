@@ -4,7 +4,7 @@
       <HeaderSection 
         @toggle-right-drawer="rightDrawerOpen = !rightDrawerOpen"
         @toggle-help-modal="helpDialogOpen = !helpDialogOpen"
-        @toggle-left-drawer="toggleLeftDrawer"
+        @toggle-changes-modal="changesDialogOpen = !changesDialogOpen"
         :show-right-drawer="showRightDrawer"
       />
     </q-header>
@@ -42,6 +42,10 @@
 
 
 
+    <q-dialog v-model="changesDialogOpen">
+      <ChangeLogList />
+    </q-dialog>
+
     <q-dialog v-model="helpDialogOpen">
       <HelpStepper @handle-finish="helpDialogOpen = !helpDialogOpen"/>
     </q-dialog>
@@ -72,6 +76,7 @@ import PreviewListSection from './components/preview/PreviewListSection.vue';
 const settingsStore = useSettingsStore()
 const rightDrawerOpen = ref(false)
 const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
+const changesDialogOpen = ref(useSettingsStore().getInitalChangesModalState)
 const showRightDrawer = ref(true)
 const route = useRoute()
 
@@ -82,9 +87,12 @@ onMounted(() => {
 watch(() => route.fullPath, () => {
   if(route.fullPath == '/'){
     showRightDrawer.value = true
+
   }else{
     rightDrawerOpen.value = false
     showRightDrawer.value = false
+    settingsStore.leftDrawerOpen = false
+
   }
 },{immediate:true})
 

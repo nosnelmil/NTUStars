@@ -9,7 +9,7 @@
       </q-btn >
     </q-toolbar-title>
     <!-- <q-btn stretch dense flat class="q-px-md text-capitalize" label="Courses" @click="$q.notify({message:'Page under construction!'})"/> -->
-    <q-btn stretch dense flat label="changes" @click="toggleLeftDrawer" class="text-capitalize q-px-md"/>
+    <q-btn stretch dense flat label="changes" @click="toggleChangesModal" class="text-capitalize q-px-md"/>
     <q-btn stretch dense flat label="Help" @click="toggleHelpModal" class="text-capitalize q-px-md"/>
     <DetailsSearchBar class="q-mr-md"/>
     <q-toggle
@@ -30,7 +30,7 @@ import { useSettingsStore } from '../../stores/settings';
 import { ref } from 'vue'
 const settingsStore = useSettingsStore()
 const props = defineProps(['showRightDrawer'])
-const emits = defineEmits(['toggleHelpModal', 'toggelRightDrawer', 'toggleLeftDrawer'])
+const emits = defineEmits(['toggleHelpModal', 'toggelRightDrawer', 'toggleChangesModal'])
 
 const darkMode = ref(settingsStore.darkMode)
 
@@ -44,7 +44,7 @@ function toggleHelpModal(){
 function toggleRightDrawer(){
   emits("toggleRightDrawer")
 }
-function toggleLeftDrawer(){
-  emits("toggleLeftDrawer")
+function toggleChangesModal(){
+  emits("toggleChangesModal")
 }
 </script>

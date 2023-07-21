@@ -5,6 +5,7 @@ export const useSettingsStore = defineStore('settings', {
   state: () => {
     return {
       openedHelpBefore: false,
+      openedChangesBefore: false,
       leftDrawerOpen: true,
       darkMode: false
     }
@@ -18,7 +19,14 @@ export const useSettingsStore = defineStore('settings', {
       state.openedHelpBefore = true
       return true
     }
-  },
+   },
+    getInitalChangesModalState: (state) => {
+      if (state.openedChangesBefore) {
+        return false
+      }
+      state.openedChangesBefore = true
+      return true
+    },
   actions: {
     setSettings(){
       Dark.set(this.darkMode)
@@ -30,6 +38,9 @@ export const useSettingsStore = defineStore('settings', {
       Dark.toggle()
       this.darkMode = Dark.isActive
       return Dark.isActive
+    },
+    toggleChangesDialog(){
+      this.changesDialogOpen = !this.changesDialogOpen
     }
   },
   persist: true
