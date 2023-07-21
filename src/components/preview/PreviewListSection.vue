@@ -1,14 +1,19 @@
 <template>
-  <div class="col-12 col-md-10 q-pa-md" v-if="timetableStore.previewIndexes && timetableStore.totalIndexCount > 0">
+  <div class="col-12 col-md-10 q-pa-md">
     <div class="text-h6">Indexes:</div>
-    <div class="text-overline"> 
+    <div class="text-overline" v-if="timetableStore.previewIndexes && timetableStore.totalIndexCount > 0"> 
       Total Indexes: {{ timetableStore.totalIndexCount }} | 
       Showing {{ timetableStore.showingPreviewIndexCount }} / 
-      {{ timetableStore.maxShowingIndex > timetableStore.totalIndexCount ? timetableStore.totalIndexCount : timetableStore.maxShowingIndex }}</div>
+      {{ timetableStore.maxShowingIndex > timetableStore.totalIndexCount ? timetableStore.totalIndexCount : timetableStore.maxShowingIndex }}
+    </div>
+    <div class="text-overline" v-else> 
+      Click on a class above to see other possible indexes.
+    </div>
     <div class="flex flex-center">
       <div class="q-gutter-xs">
         <q-chip 
           v-for="[index, value] of Object.entries(showingPreviewIndexes)"
+          v-if="value == true"
           :disable="timetableStore.getShowingIndex(timetableStore.getPreviewCourseCode) == index"
           @update:selected="(nextState) => onChipClicked(nextState, index)"
           :selected="value"
@@ -18,13 +23,28 @@
           {{index}}
         </q-chip>
       </div>
-      <q-pagination
-        v-model="currentPage"
-        :max="numberOfPages"
-        :max-pages="6"
-        boundary-numbers
-        direction-links
-      />
+      <div class="q-gutter-xs">
+        <q-chip 
+          v-for="[index, value] of Object.entries(showingPreviewIndexes)"
+          v-if="value == false"
+          :disable="timetableStore.getShowingIndex(timetableStore.getPreviewCourseCode) == index"
+          @update:selected="(nextState) => onChipClicked(nextState, index)"
+          :selected="value"
+          :key="index"
+          color="primary" 
+          text-color="white">
+          {{index}}
+        </q-chip>
+      </div>
+      <div class="flex flex-center q-mt-sm" style="width: 100%;">
+        <q-pagination
+          v-model="currentPage"
+          :max="numberOfPages"
+          :max-pages="6"
+          boundary-numbers
+          direction-links
+        />
+      </div>
     </div>
   </div>
 </template>
