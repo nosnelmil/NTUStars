@@ -68,6 +68,11 @@ const changes = [
 
 const bugfixes = [
     {
+        title: "#4 Get Semester error",
+        dateTime: formatDateTime("2023-07-21", "12:20"),
+        description: "Insufficient memory was allocated to server running getschedule api call."
+    },
+    {
         title: "#3 EE2101 error",
         dateTime: formatDateTime("2023-06-28", "16:00"),
         description: "EE2101 is not valid error."
