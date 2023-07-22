@@ -83,8 +83,6 @@
     >
       You can also add custom events by selecting the timeslots where your event will occur.
       <br>
-      <br>
-      It's great for adding CC mods or important events that affect your schedule.
       <q-img :src="demo2" class="q-my-md"/>
       <q-stepper-navigation>
         <q-btn flat @click="step = 3" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
