@@ -44,9 +44,9 @@
       If the course exists it would appear in the timetable.
       <br>
       <br>
-      <span class="text-red text-bold">Warning<br></span>
+      <!-- <span class="text-red text-bold">Warning<br></span>
       Avoid adding CC mods as they might lag the site. Instead, try adding custom events to represent represent them. <br> 
-      <span class="text-caption text-subtitle2 text-grey-7">*working on a fix</span>
+      <span class="text-caption text-subtitle2 text-grey-7">*working on a fix</span> -->
       
       <q-stepper-navigation>
         <q-btn flat @click="step = 1" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
