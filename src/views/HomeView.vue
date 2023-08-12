@@ -19,6 +19,4 @@ import TimetableSection from "@/components/TimetableSection.vue"
 import { useSettingsStore } from "../stores/settings";
 import { useTimetableStore } from "../stores/timetable";
 
-
-
 </script>

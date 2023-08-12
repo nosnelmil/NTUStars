@@ -128,7 +128,7 @@ export const useSchedules = defineStore('schedules', {
       }
     },
   },
-  persist: false,
+  persist: true,
   // {
   //   afterRestore: (ctx) => {
   //     console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
