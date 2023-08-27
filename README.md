@@ -1,64 +1,85 @@
+<p align='center'>
+<img src="./assets//NTUStars-icon.png" alt="icon" width="45"/>
+</p>
+
+
+# NTUStars
+<img src="./assets//NTUStars.png" alt="drawing"/>
+
+Find it here! [NTUStars](https://www.ntustars.com)
+
+
 # Background
 
 Bring up the phrase "STARS Wars" to any NTU student and the respond would be universal - frustration and anger. 
 STARS refer to a course bidding system provided by NTU in which students engages in two major activity 
     - to plan their upcoming semester time table
-    - to bid and secure their courses
+    - to bid and secure their courses <br>
 
-The reason why its a war for students could be attributed to the fact that everyone has to fight for their modules and not all will survive (failed to secure the module they wish to take).
+I have talked about the background more indepth on linkedin so follow the link if you would like to find out more! [LinkedIn](https://www.linkedin.com/posts/lenson-lim-05974621b_during-the-semester-break-i-finally-attempted-activity-7100377614392950784-J8Md?utm_source=share&utm_medium=member_desktop) <br>
 
-The NTU STARS System has been a major pain point to NTU Students for decades and unfortunately not much have been done to alleviate it. Starting from the planning phase, student aonly have access to a timetable planning tool that is slow, unintuitive and inefficient. A typical student in NTU takes around 6 modules per semester and each modules have dozens of indexes (possible time slots). As a result, Students often find themselves spending hours going through dozens or even hundrends of different indexes,exacerbated by the fact that each index can only be loaded once at a time, in order to find a suitable timetable. Its alos a good time to bring up that each student would have to plan around 3 timetables in an event that they failed to secure the module they want.
+In sumamry, this project aims to solve a decade old problem by providing a tool for NTU students to plan their timetable in a effective, simplified manner.
 
-All this equates to a huge drain of studnets time just to plan for their semester.
+# Architecture
+<img src="./assets//NTUStars-archi.png" alt="Architecture"/>
 
-Although, the bidding portion is a also major pain point for students, improving this require tweaking and improving NTU internal system which is not feasible without any official collaboration.
+Frontend Repository: [NTUStars App](https://github.com/Lebarnon/BetterNotesApp) <br>
+Backend Repository: [NTUStars Server](https://github.com/Lebarnon/BetterNotesServer) 
 
-Hence, this project aims to provide a tool for NTU students to plan their timetable in a effective, simplified manner.
+
+### **Frontend: Vue3 + Pinia** <br>
+For the frontend, I utilised Vue3 composition api and managed most of the application state using Pinia. If you are familiar with React, Pinia is like React Redux. <br> 
+Most of the application logic lies within the 3 stores I have: <br>
+<ol>
+  <li>Schedules Store</li>
+  The schedules store main job is to interact with my serverless APIs and format incoming data into a structure I want for my specific use cases in the frontend.
+  <li>Timetable Store</li>
+  The timetable stores contains all functionality related to the actual time table itself. Be it adding courses, remove, previewing etc...
+  On hindset, I should have really done this in Typescript but refactoring at this point was a lot of work. Instead, I brought the lessons learnt to this project:
+  
+[BetterNotes](https://github.com/Lebarnon/BetterNotesApp)
+
+  <li>Settings Store</li>
+  Settings store contains all the settings related stuff in the app like dark mode.
+</ol> 
+
+### **Backend: Firebase**
+Firebase functions was used as my severless server mainly due to its always free tier (Great for my pocket).<br>
+This project could actually be done entire on the frontend but I really wanted to play around with a serverless architecture and to hide crucial "business logic".
+
+The overall logic in firebase functions is as follows:<br><br>
+**User request for data** 
+
+Validate request --> Check firestore for requested data --> If have return data from firestore --> Else start scraping service (see) --> clean & format scraped data --> save into firestore --> return data
+
+**Scraping Service**
+
+[NTU Class Schedule](https://wish.wis.ntu.edu.sg/webexe/owa/aus_schedule.main) is where I get course timetable data<br>
+[NTU Content of Courses](https://wis.ntu.edu.sg/webexe/owa/aus_subj_cont.main) is where I get data on course information like the course description. <br><br>
+Not sure why they must have separate website for different information. So based on the request and using [Puppeteer](https://pptr.dev/), I first had to analyse the html structure of the website, find the appropriate information I want using a variety of CSS selector and finally return it to be formatted in whatever way i deemed fit to be saved in firestore.
 
 
-## Identifying the cause
+# Considerations
+For anyone who might be curious, these are just some of my considerations and throught processes during this project
+
+## Identifying the Issue
 Planning a timetable first requires student to add the modules they are interested in. Afterwhich, students would have to painstakingly iterate through each index for each module to find a timetable that is clash free and to their preference (no lessons on a particular day, morning/afternoon lessons). Given that each module have dozens or even hundreds of indexes, a simple calculation shows that students have thousands of possible timetable combination to go through before finding suitable ones. Thousands.
 
-With that surfaced, eliminating the process of interating through each index for all modules is a must. To achieve that, an overview of how a module indexes will fit into a studnet's timetable would suffice. To inform student which classes or in the same index, a simple hover effect would be intuitive.
+The most intuitive idea is to help generate all possible combinations and students just need to select their ideals one.
+
+However, existing attempts to solve this problem already involve timetable generators, but through testing and feedback, they often fall short due to the complexity of personal preferences. To truly simplify the process, I recognized the need for flexibility without sacrificing simplicity.
 
 ## Developing the solution
+Here is the consolidated and summarised considerations:
 
-### Overview of technologies and concepts used
-#### Tech Stack (NTU Stars)
-Vue3
-Pinia (Similar to VueX)
-Firebase
+**Current Solutions**: Existing attempts to solve this problem involve timetable generators, but they often fall short due to the complexity of personal preferences.To truly simplify the process, I recognized the need for flexibility without sacrificing simplicity.
+<br>
 
-#### Scraper
-Puppeteer
-Node.js
-Firebase Functions (Serverless API)
+**Value**: I was aware that my solution needed to be significantly better than current options that students are familiar with to be truly valuable. This meant optimizing load times, modernizing the user interface while maintaining familiarity, and significantly streamlining the planning process. <br>
 
-#### Diagram
+**Cost**: As this project would ultimately be intended for the community, cost-efficiency was essential. Therefore, there was a need to strike a balance between different cloud providers and their solutions that would allow me to scale the project comfortably.
+<br>
 
-a
+**Requirements**: I used a simple litmus test which was to constantly ask, "Would I use it?". Asides from that, there was also a need to continuously seek feedback and user testing from my peers as NTU students were after all the key stakeholders.
 
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+All in all the result was NTUStars! The journey was definitely rewarding and I've learnt so much because I was able to take the time to understand what's going on, explore other possibilities and just simply test out any ideas I had.
