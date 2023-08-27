@@ -18,7 +18,7 @@ In summary, this project aims to solve a decade-old problem by providing a tool 
 # Architecture
 <img src="./assets/NTUStars-archi.png" alt="Architecture"/>
 
-Frontend Repository: [NTUStars App](https://github.com/Lebarnon/BetterNotesApp)
+Frontend Repository: [NTUStars App](https://github.com/Lebarnon/BetterNotesApp)<br>
 Backend Repository: [NTUStars Server](https://github.com/Lebarnon/BetterNotesServer)
 
 ### **Frontend: Vue3 + Pinia**
@@ -37,6 +37,7 @@ Firebase Functions were used as my serverless server mainly due to its always fr
 This project could actually be done entirely on the frontend, but I really wanted to play around with a serverless architecture and to hide crucial "business logic".
 
 The overall logic in Firebase Functions is as follows:
+
 **User request for data**
 
 Validate request --> Check Firestore for requested data --> If available, return data from Firestore --> Else start scraping service (see) --> clean & format scraped data --> save into Firestore --> return data
