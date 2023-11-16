@@ -12,6 +12,14 @@
     <q-btn stretch dense flat label="changes" @click="toggleChangesModal" class="text-capitalize q-px-md"/>
     <q-btn stretch dense flat label="Help" @click="toggleHelpModal" class="text-capitalize q-px-md"/>
     <DetailsSearchBar class="q-mr-md"/>
+    <q-btn 
+      dense
+      flat 
+      round
+      class="text-capitalize gt-xs" 
+      icon="svguse:icons.svg#github" 
+      href='https://github.com/Lebarnon/NTUStars' 
+      target="_blank" />
     <q-toggle
         v-model="darkMode"
         color="black"
@@ -34,8 +42,8 @@ const emits = defineEmits(['toggleHelpModal', 'toggelRightDrawer', 'toggleChange
 
 const darkMode = ref(settingsStore.darkMode)
 
-function onDarkModeToggle(val){
-  darkMode.val = settingsStore.toggelDarkMode()
+function onDarkModeToggle(){
+  darkMode.value.val = settingsStore.toggelDarkMode()
 }
 
 function toggleHelpModal(){
