@@ -12,11 +12,34 @@ export function parseCourseInfoFromDB(data){
   }
   // Prevent duplicate lectures from being added
   var lectureAdded = false
+  var isUniqueLectures = false
+  // check if lectures across indexes are the same or unique
+  const lectureMap = new Map()
+  for(const [index, indexSchedule] of Object.entries(schedule)){
+    for(var i=0; i<indexSchedule.length; i++){
+      const classData = indexSchedule[i]
+      if(classData.type == "LEC/STUDIO"){
+        const start = getCurrentDay(Day[classData.day]) + parseStartTime(classData.time)
+        const end = getCurrentDay(Day[classData.day]) + parseEndTime(classData.time)
+        if(!lectureAdded){
+          lectureMap.set(start, end)
+        }else if(lectureMap.get(start) != end){
+          isUniqueLectures = true
+          break
+        }
+      }
+    }
+    lectureAdded = true
+    if(isUniqueLectures == true){
+      break
+    }
+  }
+  lectureAdded = false
   for(const [index, indexSchedule] of Object.entries(schedule)){
     for(var i=0; i<indexSchedule.length; i++){
       const classData = indexSchedule[i]
       // skip if have already added lecture classes
-      if(lectureAdded && classData.type == "LEC/STUDIO") continue;
+      if(lectureAdded && classData.type == "LEC/STUDIO" && !isUniqueLectures) continue;
       // create class info object (A class in an index)
       let classInfo = {
         id:  `${courseCode} ${index} ${i}`,
@@ -34,7 +57,7 @@ export function parseCourseInfoFromDB(data){
         end: getCurrentDay(Day[classData.day]) + parseEndTime(classData.time),
       }
       // if its a lecture, remove unnecessary info
-      if(classData.type == "LEC/STUDIO"){
+      if(classData.type == "LEC/STUDIO" && !isUniqueLectures){
         classInfo.groupid = null
         classInfo.index = ""
         classInfo.group = ""
