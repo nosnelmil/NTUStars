@@ -25,18 +25,19 @@
   </ClientOnly>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import FullCalendar from '@fullcalendar/vue3'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { onMounted, ref } from 'vue'
 import { useTimetableStore } from '../stores/timetable'
+import type { CalendarOptions, DateSelectArg, EventApi, EventClickArg, EventHoveringArg } from '@fullcalendar/core/index.js'
 // import EventFormDialog from './EventFormDialog.vue'
 
 const timetableStore = useTimetableStore()
-const calendar = ref(null)
+const calendar = ref<typeof FullCalendar | null>(null)
 
-const calendarOptions = ref({
+const calendarOptions = ref<CalendarOptions>({
   plugins: [
     timeGridPlugin,
     interactionPlugin // needed for dateClick
@@ -70,14 +71,16 @@ const calendarOptions = ref({
   // eventResize: (e) => timetableStore.updateCustomEvent(e.event),
 })
 
-const currentEvents = ref(null)
+const currentEvents = ref<EventApi[]>([])
 
 onMounted(() => {
-  timetableStore.setCalendarApi(calendar)
+  if(calendar.value ){
+    timetableStore.setCalendarApi(calendar.value)
+  }
   timetableStore.setTimeTable()
 })
 
-function handleDateSelect(selectInfo) {
+function handleDateSelect(selectInfo: DateSelectArg) {
   const calendarApi = selectInfo.view.calendar
   if(!timetableStore.getSemester){
     calendarApi.unselect() 
@@ -99,7 +102,7 @@ function handleDateSelect(selectInfo) {
   // })
 }
 
-function handleEventClick(clickInfo) {
+function handleEventClick(clickInfo: EventClickArg) {
   const event = clickInfo.event
   const courseCode = event.extendedProps.courseCode
   if(event.extendedProps.isCustom){
@@ -139,16 +142,16 @@ function handleEventClick(clickInfo) {
   }
   
 }
-function handleEvents(events) {
+function handleEvents(events: EventApi[]) {
   currentEvents.value = events
 }
-function handleMouseEnter(mouseEnterInfo){
+function handleMouseEnter(mouseEnterInfo: EventHoveringArg){
   const event = mouseEnterInfo.event
   if(event.extendedProps.isPreview){
     event.setProp( "classNames", ['lesson-body','no-lighten'])
   }
 }
-function handleMouseLeave(mouseLeaveInfo){
+function handleMouseLeave(mouseLeaveInfo: EventHoveringArg){
   const event = mouseLeaveInfo.event
   if(event.extendedProps.isPreview){
     event.setProp( "classNames", ['lesson-body','lighten'] )

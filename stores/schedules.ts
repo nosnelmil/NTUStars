@@ -43,7 +43,7 @@ export const useSchedules = defineStore('schedules', {
         })
         try {
           const response = await fetch(
-            import.meta.env.VITE_GETSCHEDULE_ENDPOINT,
+            useRuntimeConfig().public.getscheduleEndpoint,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -70,7 +70,7 @@ export const useSchedules = defineStore('schedules', {
       // get from database
       try {
         const response = await fetch(
-          import.meta.env.VITE_GETSEMESTERS_ENDPOINT,
+          useRuntimeConfig().public.getsemesterEndpoint,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -102,7 +102,7 @@ export const useSchedules = defineStore('schedules', {
         })
         try {
           const response = await fetch(
-            import.meta.env.VITE_GETCOURSECONTENT_ENDPOINT,
+            useRuntimeConfig().public.getcoursecontentEndpoint,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

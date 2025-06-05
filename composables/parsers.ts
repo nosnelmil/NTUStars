@@ -56,7 +56,7 @@ export function parseCourseInfoFromDB(data: DBCourse) {
       // create class info object (A class in an index)
       const classInfo: ParsedLesson = {
         id: `${courseCode} ${index} ${i}`,
-        groupid: courseCode + index,
+        groupId: courseCode + index,
         courseName: courseName,
         courseCode: courseCode,
         index: index,
@@ -68,10 +68,11 @@ export function parseCourseInfoFromDB(data: DBCourse) {
         frequency: parseWeeks(classData.weeks),
         start: getCurrentDay(DayDict[classData.day]) + parseStartTime(classData.time),
         end: getCurrentDay(DayDict[classData.day]) + parseEndTime(classData.time),
+        au: au
       }
       // if its a lecture, remove unnecessary info
       if (classData.type == "LEC/STUDIO" && !isUniqueLectures) {
-        classInfo.groupid = null
+        classInfo.groupId = null
         classInfo.index = ""
         classInfo.group = ""
         result["lectures"].push(classInfo)

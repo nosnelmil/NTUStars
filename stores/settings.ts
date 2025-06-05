@@ -1,8 +1,16 @@
 import { defineStore } from 'pinia'
 // import { Dark } from 'quasar'
 
+interface SettingsState {
+  openedHelpBefore: boolean;
+  openedChangesBefore: boolean;
+  leftDrawerOpen: boolean;
+  darkMode: boolean;
+  changesDialogOpen?: boolean;
+}
+
 export const useSettingsStore = defineStore('settings', {
-  state: () => {
+  state: (): SettingsState => {
     return {
       openedHelpBefore: false,
       openedChangesBefore: false,
@@ -10,7 +18,6 @@ export const useSettingsStore = defineStore('settings', {
       darkMode: false
     }
   },
-
   getters: {
     getInitalHelpModalState: (state) => {
       if (state.openedHelpBefore) {
@@ -18,14 +25,14 @@ export const useSettingsStore = defineStore('settings', {
       }
       state.openedHelpBefore = true
       return true
-    }
-  },
-  getInitalChangesModalState: (state) => {
-    if (state.openedChangesBefore) {
-      return false
-    }
-    state.openedChangesBefore = true
-    return true
+    },
+    getInitalChangesModalState: (state) => {
+      if (state.openedChangesBefore) {
+        return false
+      }
+      state.openedChangesBefore = true
+      return true
+    },
   },
   actions: {
     setSettings() {

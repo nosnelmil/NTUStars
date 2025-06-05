@@ -1,6 +1,6 @@
 export interface ParsedLesson {
   id: string;
-  groupid: string | null;
+  groupId: string | null;
   courseName: string;
   courseCode: string;
   index: string;
@@ -12,4 +12,5 @@ export interface ParsedLesson {
   frequency: string;
   start: string;
   end: string;
+  au: string;
 }

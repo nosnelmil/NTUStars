@@ -1,27 +1,63 @@
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
 import { defineStore } from 'pinia'
 import { useSchedules } from './schedules'
 import { createEventId } from '../composables/event-utils';
-import type { CalendarApi } from '@fullcalendar/core/index.js';
+import type FullCalendar from '@fullcalendar/vue3'
+import type { ParsedLesson } from '~/models/parsedLesson';
+import type { DateSelectArg } from '@fullcalendar/core/index.js';
+import type { EventImpl } from '@fullcalendar/core/internal';
 
 const MAX_SHOWING_INDEX = 25
 
 interface TimetableState {
-  calenderApi: CalendarApi | null;
+  calenderApi: typeof FullCalendar | null;
   coursesAdded: CoursesAdded;
-
+  showingPreview: ShowingPreview;
+  previewCourseCode: string | null;
+  maxShowingIndex: number;
+  showingPreviewIndexCount: number;
+  totalIndexCount: number;
+  previewIndexes: { [index: string]: boolean };
+  savedPreviewIndexes: { [semester: string]: { [courseCode: string]: { [index: string]: boolean } } };
+  timeTable: Timetable;
+  colors: string[];
+  isLoading: boolean;
+  semester: string | null;
+  plan: number;
 }
 
 interface CoursesAdded {
-  [semester: string]: {
-    [courseCode: string]: {
-      isLoading: boolean;
-      courseName: string;
-      index: string;
-      backgroundColor: string;
-      au: string;
-      courseCode: string;
-    }
+  [plan: string]: {
+    [courseCode: string]: CourseDisplay
   }
+}
+
+interface ShowingPreview {
+  [plan: string]: CourseDisplay[]
+}
+
+interface CourseDisplay extends ParsedLesson {
+  editable: boolean;
+  classNames: string[];
+  isPreview: boolean;
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+  isLoading?: boolean;
+  isCustom?: boolean; // for custom events
+}
+
+interface Timetable {
+  [plan: number]: {
+    [courseCode: string]: {
+      lectures: CourseDisplay[];
+      lessons: CourseDisplay[];
+    };
+  } & {
+    custom?: {
+      events: CourseDisplay[];
+    };
+  };
 }
 export const useTimetableStore = defineStore('timetable', {
   state: (): TimetableState => {
@@ -50,22 +86,24 @@ export const useTimetableStore = defineStore('timetable', {
       isLoading: false,
       // The overall selected semester
       semester: null,
+      // The plan number of the timetable
+      plan: 0,
     }
   },
 
   getters: {
     getTimeTable: (state) => {
-      return state.timeTable[state.semester]
+      return state.timeTable[state.plan]
     },
     getCourseCodeShowingPreview: (state) => {
-      if (state.semester in state.showingPreview) {
-        return state.showingPreview[state.semester].length > 0
-          ? state.showingPreview[state.semester][0].courseCode
+      if (state.plan in state.showingPreview) {
+        return state.showingPreview[state.plan].length > 0
+          ? state.showingPreview[state.plan][0].courseCode
           : null
       }
     },
     getCoursesAdded: (state) => {
-      return { ...state.coursesAdded[state.semester] }
+      return { ...state.coursesAdded[state.plan] }
     },
     getSemester: (state) => {
       return state.semester
@@ -82,17 +120,17 @@ export const useTimetableStore = defineStore('timetable', {
       }
     },
     getTotalAus: (state) => {
-      if (state.semester && state.semester in state.coursesAdded) {
-        return Object.keys(state.coursesAdded[state.semester])
+      if (state.plan in state.coursesAdded) {
+        return Object.keys(state.coursesAdded[state.plan])
           .reduce((prev, key) =>
-            prev + parseInt(state.coursesAdded[state.semester][key].au)
+            prev + parseInt(state.coursesAdded[state.plan][key].au)
             , 0)
       } else {
         return 0
       }
     },
     getShowingIndex: (state) => {
-      return (courseCode) => courseCode ? state.coursesAdded[state.semester][courseCode].index : null
+      return (courseCode: string) => courseCode ? state.coursesAdded[state.plan][courseCode].index : null
     },
     getPreviewCourseCode: (state) => {
       // if(state.semester in state.showingPreview && state.showingPreview[state.semester].length > 0){
@@ -104,91 +142,106 @@ export const useTimetableStore = defineStore('timetable', {
       return Object.entries(state.previewIndexes)
     },
     getSavedPreviewIndexes: (state) =>
-      state.savedPreviewIndexes[state.semester]?.[state.previewCourseCode]
-        ? Object.entries(state.savedPreviewIndexes[state.semester][state.previewCourseCode])
+      state.savedPreviewIndexes[state.plan]?.[state.plan]
+        ? Object.entries(state.savedPreviewIndexes[state.plan][state.previewCourseCode || ""])
         : [],
 
     isIndexPreviewSaved: (state) => {
-      return (index) => state.savedPreviewIndexes[state.semester]?.[state.previewCourseCode]?.[index]
+      return (index: string) => state.previewCourseCode && state.savedPreviewIndexes[state.plan]?.[state.previewCourseCode]?.[index]
     }
   },
 
   actions: {
     setTimeTable() {
       if (Object.keys(this.timeTable).length == 0) return
-      for (const courseCodeObj of Object.values(this.timeTable)) {
-        for (const groupedTimeTableItems of Object.values(courseCodeObj)) {
-          for (const timeTableItems of Object.values(groupedTimeTableItems)) {
-            if (timeTableItems) {
-              for (const timeTableItem of timeTableItems) {
-                this.calenderApi.getApi().view.calendar.addEvent(timeTableItem)
-              }
+      for (const courseCodeObj of Object.values(this.getTimeTable)) {
+        for (const timeTableItems of Object.values(courseCodeObj)) {
+          if (timeTableItems) {
+            for (const timeTableItem of timeTableItems) {
+              this.calenderApi?.getApi().view.calendar.addEvent(timeTableItem)
             }
           }
         }
       }
     },
-    setCalendarApi(calenderApi) {
+    setCalendarApi(calenderApi: typeof FullCalendar) {
       this.calenderApi = calenderApi
     },
-    async addCourse(code) {
+    async addCourse(code: string) {
       const courseCode = code.toUpperCase()
-      const semester = this.semester
-      const calendar = this.calenderApi.getApi().view.calendar
+      const plan = this.plan
+      const calendar = this.calenderApi?.getApi().view.calendar
       // check if already in timetable
-      if (this.coursesAdded?.[semester]?.[courseCode]) {
-        Notify.create({ message: "Course already in timetable!", color: "negative" })
+      if (this.coursesAdded?.[plan]?.[courseCode]) {
+        // Notify.create({ message: "Course already in timetable!", color: "negative" })
+        useToast().add({ title: "Course already in timetable!", description: "Please check your timetable.", color: "error", });
         return
       }
       // instantiate if needed
       // add initial value to coursesAdded
-      (this.coursesAdded[semester] ??= {})[courseCode] = {
+      (this.coursesAdded[plan] ??= {})[courseCode] = {
+        id: "",
+        groupId: null,
+        editable: false,
+        classNames: [],
+        isPreview: false,
         isLoading: true,
         courseName: "",
         index: "",
         backgroundColor: "",
         au: "",
-        courseCode: courseCode
+        courseCode: courseCode,
+        start: "",
+        end: "",
+        textColor: "white",
+        borderColor: "",
+        type: "",
+        group: "",
+        venue: "",
+        date: "",
+        weeks: "",
+        frequency: "",
       };
       // retrieve the course scheudle
       const scheduleStore = useSchedules()
-      const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
+      const courseInfo = this.semester ? await scheduleStore.fetchCourseSchedule(this.semester, courseCode) : null
       if (!courseInfo) {
         // course does not exist / there is no courseInfo
-        delete this.coursesAdded[semester][courseCode]
+        delete this.coursesAdded[plan][courseCode]
         return null
       }
 
       // get a color for this course
-      var backgroundColor = this.getRandomColor() || "#E65100";
+      const backgroundColor = this.getRandomColor() || "#E65100";
 
       // store ids in state so its easier to delete later
       // instantiate
-      (this.timeTable[semester] ??= {})[courseCode] = {
+      (this.timeTable[this.plan] ??= {})[courseCode] = {
         "lectures": [],
         "lessons": [],
       };
 
       // add the lecture slots for this course
-      for (var classInfo of courseInfo.lectures) {
-        classInfo = addTimetableProp(classInfo, false, backgroundColor)
-        calendar.addEvent(classInfo)
-        this.timeTable[semester][courseCode].lectures.push(classInfo)
+      for (const classInfo of courseInfo.lectures) {
+        const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
+        calendar.addEvent(updateClassInfo)
+        this.timeTable[plan][courseCode].lectures.push(updateClassInfo)
       }
 
       // add the first non-lecture slot for this course
       let addedIndex = ""
       for (const [index, indexSchedule] of Object.entries(courseInfo.lessons)) {
-        for (classInfo of indexSchedule) {
-          classInfo = addTimetableProp(classInfo, false, backgroundColor)
+        for (const classInfo of indexSchedule) {
+          const parsedClassInfo = addTimetableProp(classInfo, false, backgroundColor)
           calendar.addEvent(classInfo)
-          this.timeTable[semester][courseCode].lessons.push(classInfo)
+          this.timeTable[plan][courseCode].lessons.push(parsedClassInfo)
         }
         addedIndex = index
         break
       }
       // update courses added state
-      this.coursesAdded[semester][courseCode] = {
+      this.coursesAdded[plan][courseCode] = {
+        ...this.coursesAdded[plan][courseCode],
         isLoading: false,
         courseName: courseInfo.courseName,
         index: addedIndex,
@@ -197,52 +250,56 @@ export const useTimetableStore = defineStore('timetable', {
         au: courseInfo.au,
       }
     },
-    addCustomEvent(selectInfo, name) {
-      const semester = this.semester
-      const calendar = this.calenderApi.getApi().view.calendar
+    addCustomEvent(selectInfo: DateSelectArg, name: string) {
+      const plan = this.plan
+      const calendar = this.calenderApi?.getApi().view.calendar
       // Add to custom events if needed
-      let color
-      if (!(semester in this.timeTable)) {
-        this.timeTable[semester] = {}
+      let color = ""
+      if (!(plan in this.timeTable)) {
+        this.timeTable[plan] = {}
       }
-      if (!(this.timeTable?.[semester]?.["custom"]?.["events"])) {
-        (this.timeTable[semester] ??= {})["custom"] = {
+      if (!(this.timeTable?.[plan]?.["custom"]?.["events"])) {
+        (this.timeTable[plan] ??= {})["custom"] = {
           "events": []
         };
-        (this.coursesAdded[semester] ??= {})["custom"] = {
-          isLoading: true,
-          courseCode: "custom",
-          courseName: "Custom Events",
-          au: 0,
-          index: "",
-          backgroundColor: "",
-        }
         color = this.getRandomColor()
       }
       else {
-        color = this.coursesAdded[semester]["custom"].backgroundColor
+        color = this.coursesAdded[plan].custom.backgroundColor
       }
       // Add event to calendar
-      const classInfo = {
+      const classInfo: CourseDisplay = {
         id: createEventId() + name,
         groupId: createEventId() + name,
         courseName: name,
         start: selectInfo.startStr,
         end: selectInfo.endStr,
         isCustom: true,
+        editable: true,
+        classNames: [],
+        isPreview: false,
+        backgroundColor: color,
+        borderColor: color,
+        textColor: 'white',
+        courseCode: "custom",
+        index: "",
+        au: "0",
+        type: "",
+        group: "",
+        venue: "",
+        date: "",
+        weeks: "",
+        frequency: "",
       }
-      classInfo.editable = true
       const event = addTimetableProp(classInfo, false, color)
 
       // save event to timetable & coursesAdded
-      this.timeTable[semester]["custom"]["events"].push(event)
-      this.coursesAdded[semester]["custom"].isLoading = false
-      this.coursesAdded[semester]["custom"].backgroundColor = color
+      this.timeTable[plan].custom.events.push(event)
       calendar.addEvent(event)
 
     },
-    updateCustomEvent(event) {
-      this.timeTable[this.semester]["custom"]["events"].forEach((e) => {
+    updateCustomEvent(event: EventImpl) {
+      this.timeTable[this.plan].custom?.events.forEach((e) => {
         if (e.id == event.id) {
           e.courseName = event.extendedProps.courseName
           e.start = event.startStr
@@ -250,62 +307,70 @@ export const useTimetableStore = defineStore('timetable', {
         }
       })
     },
-    removeCourse(courseCode) {
-      const semester = this.semester
-      const calendar = this.calenderApi.getApi().view.calendar
-      if (!(semester in this.timeTable) || !(courseCode in this.timeTable[semester])) {
-        Notify.create("Unable to remove course")
+    removeCourse(courseCode: string) {
+      const plan = this.plan
+      const calendar = this.calenderApi?.getApi().view.calendar
+      if (!(plan in this.timeTable) || !(courseCode in this.timeTable[plan])) {
+        // Notify.create("Unable to remove course")
+        useToast().add({ title: "Unable to remove course", description: "Please check your timetable.", color: "error", });
         return
       }
       // remove from calendar
       if (courseCode != "custom") {
-        if ('lectures' in this.timeTable[semester][courseCode]) {
-          for (const event of this.timeTable[semester][courseCode]['lectures']) {
+        if ('lectures' in this.timeTable[plan][courseCode]) {
+          for (const event of this.timeTable[plan][courseCode]['lectures']) {
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[semester][courseCode]['lectures'] = []
+          this.timeTable[plan][courseCode]['lectures'] = []
         }
-        if ('lessons' in this.timeTable[semester][courseCode]) {
-          for (const event of this.timeTable[semester][courseCode]['lessons']) {
+        if ('lessons' in this.timeTable[plan][courseCode]) {
+          for (const event of this.timeTable[plan][courseCode]['lessons']) {
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[semester][courseCode]['lessons'] = []
+          this.timeTable[plan][courseCode]['lessons'] = []
         }
-        if (semester in this.showingPreview && this.showingPreview[semester].length > 0) {
+        if (plan in this.showingPreview && this.showingPreview[plan].length > 0) {
           // remove from showingPreview if showingPreview is the deleted coursecode
-          if (courseCode == this.showingPreview[semester][0].courseCode) {
+          if (courseCode == this.showingPreview[plan][0].courseCode) {
             this.resetPreview()
             // reset all indexes
             this.previewIndexes = {}
           }
         }
       } else {
-        for (const event of this.timeTable[semester][courseCode]['events']) {
-          calendar.getEventById(event.id).remove()
+        if (this.timeTable[plan].custom?.events) {
+          for (const event of this.timeTable[plan].custom.events) {
+            calendar.getEventById(event.id)?.remove()
+          }
         }
-        this.timeTable[semester][courseCode] = []
+        delete this.timeTable[plan][courseCode];
       }
 
-
-
-      const colorUsed = this.coursesAdded[semester][courseCode].backgroundColor
+      const colorUsed = this.coursesAdded[plan][courseCode].backgroundColor
       this.returnColor(colorUsed)
-      delete this.coursesAdded[semester][courseCode]
+      delete this.coursesAdded[plan][courseCode]
     },
-    async setPreview(courseCode) {
+
+    async setPreview(courseCode: string) {
+      if (!this.semester || !courseCode) {
+        useToast().add({ title: "Please select a semester and course code", description: "Cannot set preview.", color: "error", });
+        return
+      }
       const scheduleStore = useSchedules()
-      const semester = this.semester
-      const calendar = this.calenderApi.getApi().view.calendar
-      const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
-      const showing = this.coursesAdded[semester][courseCode]
+      const plan = this.plan
+      const calendar = this.calenderApi?.getApi().view.calendar
+      const courseInfo = await scheduleStore.fetchCourseSchedule(this.semester, courseCode)
+      const showing = this.coursesAdded[plan][courseCode]
       const showingPreview = []
+
       this.resetPreview()
+
       if (courseInfo) {
         // track number of added preview events
         this.previewCourseCode = courseCode
         this.totalIndexCount = 0
         this.previewIndexes[showing.index] = true;
-        (this.savedPreviewIndexes[semester] ??= {})[courseCode] ??= {};
+        (this.savedPreviewIndexes[plan] ??= {})[courseCode] ??= {};
         for (const [index, indexSchedule] of Object.entries(courseInfo.lessons)) {
           this.totalIndexCount += 1
           if (index == showing.index) {
@@ -324,31 +389,38 @@ export const useTimetableStore = defineStore('timetable', {
           this.showingPreviewIndexCount += 1
           this.previewIndexes[index] = true
         }
-        Notify.create({ message: `Showing ${this.showingPreviewIndexCount} / ${this.totalIndexCount} available indexes`, type: "primary" })
+        useToast().add({ title: `Showing ${this.showingPreviewIndexCount} / ${this.totalIndexCount} available indexes`, color: "primary", });
       }
       if (!showingPreview.length) {
-        Notify.create({ message: "There are no other indexes for this module.", type: "negative" })
+        // Notify.create({ message: "There are no other indexes for this module.", type: "negative" })
+        useToast().add({ title: "There are no other indexes for this module.", description: "Please check the course code.", color: "error", });
       }
-      this.showingPreview[semester] = showingPreview
+      this.showingPreview[plan] = showingPreview
     },
 
     // Temp previews are maintain with the help of paginations
-    async addTempPreviews(indexesToAdd) {
-      // if(this.showingPreviewIndexCount >= MAX_SHOWING_INDEX){
-      //   Notify.create({message: "Previewing maximum number of indexes. Please remove other indexes from preview first!", type: "negative"})
-      //   return
-      // }
+    async addTempPreviews(indexesToAdd: string[]) {
       const courseCode = this.getPreviewCourseCode
       const scheduleStore = useSchedules()
-      const semester = this.semester
-      const calendar = this.calenderApi.getApi().view.calendar
-      const courseInfo = await scheduleStore.fetchCourseSchedule(semester, courseCode)
-      const showing = this.coursesAdded[semester][courseCode]
+      const plan = this.plan
+      const calendar = this.calenderApi?.getApi().view.calendar
+
+      if (!this.semester || !this.previewCourseCode) {
+        useToast().add({ title: "Please select a semester and course code", description: "Cannot add preview.", color: "error", });
+        return
+      }
+      if (!courseCode) {
+        useToast().add({ title: "No course code selected", description: "Cannot add preview.", color: "error", });
+        return
+      }
+      const courseInfo = await scheduleStore.fetchCourseSchedule(this.semester, courseCode)
+      const showing = this.coursesAdded[plan][courseCode]
+
       if (courseInfo) {
         for (const indexToAdd of indexesToAdd) {
           for (const classInfo of courseInfo.lessons[indexToAdd]) {
             const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
-            this.showingPreview[semester].push(previewEvent)
+            this.showingPreview[plan].push(previewEvent)
             calendar.addEvent(previewEvent)
           }
           this.previewIndexes[indexToAdd] = true
@@ -356,53 +428,63 @@ export const useTimetableStore = defineStore('timetable', {
         }
       }
     },
+
     // remove previews excluding saved ones from the timetable (used during the change in pages in preview list)
-    removeTempPreviews(indexesToRemove) {
-      const semester = this.semester
-      if (!(semester in this.showingPreview)) return
-      const calendar = this.calenderApi.getApi().view.calendar
+    removeTempPreviews(indexesToRemove: string[]) {
+      const plan = this.plan
+      if (!(plan in this.showingPreview)) return
+      const calendar = this.calenderApi?.getApi().view.calendar
       const indexesToRemoveSet = new Set(indexesToRemove)
-      for (var i = this.showingPreview[semester].length - 1; i >= 0; i--) {
-        const event = this.showingPreview[semester][i]
+      for (let i = this.showingPreview[plan].length - 1; i >= 0; i--) {
+        const event = this.showingPreview[plan][i]
         // if the event is saved or showing
         if (!indexesToRemoveSet.has(event.index)) continue
         calendar.getEventById(event.id)?.remove()
-        this.showingPreview[semester].splice(i, 1)
+        this.showingPreview[plan].splice(i, 1)
         this.showingPreviewIndexCount -= 1
         this.previewIndexes[event.index] = false
       }
     },
+
     // Saved preview are previews that are selected by users
-    async addToSavePreview(indexToAdd, addToCalendar = false) {
+    async addToSavePreview(indexToAdd: string, addToCalendar = false) {
       if (addToCalendar) this.addTempPreviews([indexToAdd]);
-      ((this.savedPreviewIndexes[this.semester] ??= {})[this.previewCourseCode] ??= {})[indexToAdd] = true;
+      if (!this.previewCourseCode) {
+        useToast().add({ title: "No course code selected", description: "Cannot save preview.", color: "error", });
+        return
+      }
+      ((this.savedPreviewIndexes[this.plan] ??= {})[this.previewCourseCode] ??= {})[indexToAdd] = true;
     },
-    async removeFromSavePreview(indexToAdd, removeFromCalendar = false) {
+    async removeFromSavePreview(indexToAdd: string, removeFromCalendar = false) {
       if (removeFromCalendar) this.removeTempPreviews([indexToAdd]);
-      if (this.savedPreviewIndexes[this.semester]?.[this.previewCourseCode]?.[indexToAdd]) {
-        delete this.savedPreviewIndexes[this.semester][this.previewCourseCode][indexToAdd]
+      if (!this.previewCourseCode) {
+        useToast().add({ title: "No course code selected", description: "Cannot remove saved preview.", color: "error", });
+        return
+      }
+      if (this.savedPreviewIndexes[this.plan]?.[this.previewCourseCode]?.[indexToAdd]) {
+        delete this.savedPreviewIndexes[this.plan][this.previewCourseCode][indexToAdd]
       }
     },
     // Remove all previews included saved ones
     resetPreview() {
-      const semester = this.semester
-      if (!(semester in this.showingPreview)) return
-      const calendar = this.calenderApi.getApi().view.calendar
-      for (const event of this.showingPreview[semester]) {
+      const plan = this.plan
+      if (!(plan in this.showingPreview)) return
+      const calendar = this.calenderApi?.getApi().view.calendar
+      for (const event of this.showingPreview[plan]) {
         calendar.getEventById(event.id)?.remove()
       }
-      this.showingPreview[semester] = []
+      this.showingPreview[plan] = []
       this.previewIndexes = {}
       this.showingPreviewIndexCount = 1
       this.totalIndexCount = 0
       this.previewCourseCode = null
     },
     // swap two given indexes
-    swapIndex(courseCode, newIndex) {
-      const semester = this.semester
-      const calendar = this.calenderApi.getApi().view.calendar
+    swapIndex(courseCode: string, newIndex: string) {
+      const plan = this.plan
+      const calendar = this.calenderApi?.getApi().view.calendar
       // get event object of newIndex
-      const newLessons = this.showingPreview[semester].filter(e => e.index == newIndex)
+      const newLessons = this.showingPreview[plan].filter(e => e.index == newIndex)
       // remove showingPreview
       this.resetPreview()
 
@@ -413,7 +495,7 @@ export const useTimetableStore = defineStore('timetable', {
         e.groupId = null
       })
       // remove oldIndex
-      for (const event of this.timeTable[semester][courseCode]['lessons']) {
+      for (const event of this.timeTable[plan][courseCode]['lessons']) {
         calendar.getEventById(event.id).remove()
       }
       // add back to calendar
@@ -422,25 +504,27 @@ export const useTimetableStore = defineStore('timetable', {
         calendar.addEvent(event)
         newEvents.push(event)
       }
-      this.timeTable[semester][courseCode]['lessons'] = newEvents
+      this.timeTable[plan][courseCode]['lessons'] = newEvents
       // update added course index
-      this.coursesAdded[semester][courseCode].index = newIndex
+      this.coursesAdded[plan][courseCode].index = newIndex
     },
     // set the value of semester
-    setSemester(semesterKey) {
+    setSemester(semesterKey: string) {
       this.semester = semesterKey
     },
     // reset the calendar
     reset() {
       const calenderApi = this.calenderApi
       const savedPreviewIndexes = this.savedPreviewIndexes
-      const events = this.calenderApi.getApi().view.calendar.getEvents()
+      const events = this.calenderApi?.getApi().view.calendar.getEvents()
       for (const event of events) {
         event.remove()
       }
       this.$reset()
       this.savedPreviewIndexes = savedPreviewIndexes
-      this.setCalendarApi(calenderApi)
+      if (calenderApi) {
+        this.setCalendarApi(calenderApi)
+      }
     },
     // resize the calendar
     resize() {
@@ -448,41 +532,55 @@ export const useTimetableStore = defineStore('timetable', {
       this.calenderApi.getApi().view.calendar.updateSize()
     },
     // Return back a color to the state
-    returnColor(color) {
+    returnColor(color: string) {
       this.colors.push(color)
     },
     // Get a random color from the state (placed here so it wont be called during store initiation?)
-    getRandomColor() {
-      if (this.colors.length == 0) return null
+    getRandomColor(): string {
       const randomIndex = Math.floor(Math.random() * this.colors.length)
       const color = this.colors.at(randomIndex)
       this.colors.splice(randomIndex, 1)
-      return color
+      return color || "#E65100" // fallback color
     }
   },
-  persist:
-  {
-    afterRestore: (ctx) => {
-      // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
-      ctx.store.showingPreview = {}
-      ctx.store.previewIndexes = {}
-      ctx.store.showingPreviewIndexCount = 1
-      ctx.store.totalIndexCount = 0
-      ctx.store.maxShowingIndex = MAX_SHOWING_INDEX
-      ctx.store.previewCourseCode = null
-    },
-  }
+  persist: true,
+  // {
+  //   afterRestore: (ctx) => {
+  //     // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
+  //     ctx.store.showingPreview = {}
+  //     ctx.store.previewIndexes = {}
+  //     ctx.store.showingPreviewIndexCount = 1
+  //     ctx.store.totalIndexCount = 0
+  //     ctx.store.maxShowingIndex = MAX_SHOWING_INDEX
+  //     ctx.store.previewCourseCode = null
+  //   },
+  // }
 })
 
-function addTimetableProp(classInfo, isPreview, color) {
+function addTimetableProp(classInfo: Partial<CourseDisplay>, isPreview: boolean, color: string): CourseDisplay {
   return ({
-    groupId: isPreview ? classInfo.courseCode + classInfo.index : null,
+    ...classInfo, // spread the rest of the properties
+    id: createEventId(),
+    courseName: classInfo.courseName || '',
+    start: classInfo.start || '',
+    end: classInfo.end || '',
+    index: classInfo.index || '',
+    courseCode: classInfo.courseCode || '',
+    groupId: isPreview ? classInfo.courseCode + (classInfo.index || '') : null,
     editable: false,
     classNames: ['lesson-body'].concat(isPreview ? ['lighten'] : []),
     isPreview: isPreview,
     backgroundColor: color,
     borderColor: color,
     textColor: 'white',
-    ...classInfo
+    isLoading: false,
+    isCustom: classInfo.isCustom || false,
+    type: classInfo.type || '',
+    group: classInfo.group || '',
+    venue: classInfo.venue || '',
+    date: classInfo.date || '',
+    weeks: classInfo.weeks || '',
+    frequency: classInfo.frequency || '',
+    au: classInfo.au || '',
   })
 }

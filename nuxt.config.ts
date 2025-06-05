@@ -6,6 +6,13 @@ export default defineNuxtConfig({
   typescript: {
     typeCheck: true
   },
+  runtimeConfig: {
+    public: {
+      getcoursecontentEndpoint: "",
+      getscheduleEndpoint: "",
+      getsemesterEndpoint: ""
+    }
+  },
 
   modules: [
     '@nuxt/eslint',
