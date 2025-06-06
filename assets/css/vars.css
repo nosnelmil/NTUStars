@@ -1,0 +1,103 @@
+:root {
+  --fc-small-font-size: .85em;
+  --fc-page-bg-color: #131314;
+  --fc-neutral-bg-color: #131314;
+  --fc-neutral-text-color: #808080;
+  --fc-border-color: #9c9cb46f;
+
+  --fc-button-text-color: #fff;
+  --fc-button-bg-color: #2C3E50;
+  --fc-button-border-color: #2c3e5000;
+  --fc-button-hover-bg-color: #1e2b37;
+  --fc-button-hover-border-color: #1a252f00;
+  --fc-button-active-bg-color: #1a252f;
+  --fc-button-active-border-color: #151e2700;
+
+  --fc-event-bg-color: #2b2d42;
+  --fc-event-border-color: #2b2d4200;
+  --fc-event-text-color: #fff;
+  --fc-event-selected-overlay-color: rgba(0, 0, 0, 0.25);
+
+  --fc-more-link-bg-color: #d0d0d0;
+  --fc-more-link-text-color: inherit;
+
+  --fc-event-resizer-thickness: 8px;
+  --fc-event-resizer-dot-total-width: 8px;
+  --fc-event-resizer-dot-border-width: 1px;
+
+  --fc-non-business-color: rgba(215, 215, 215, 0.3);
+  --fc-bg-event-color: rgb(143, 223, 130);
+  --fc-bg-event-opacity: 0.3;
+  --fc-highlight-color: rgba(188, 232, 241, 0.3);
+  --fc-today-bg-color: rgba(255, 220, 40, 0.15);
+  --fc-now-indicator-color: red;
+
+  --track-color: #d0d0d0;
+  --track-thumb-color: var(--fc-neutral-bg-color);
+}
+
+.body--dark {
+  --fc-border-color: #2b2d426f;
+  --fc-neutral-bg-color: #131314;
+
+  --track-color: var(--fc-border-color);
+  --track-thumb-color: var(--fc-neutral-bg-color);
+  --track-thumb-hover-color: #808080;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  background-color: var(--track-color);
+  border-radius: 10px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--track-thumb-color);
+  border-radius: 10px;
+  transition: background-color 0.3s;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--track-thumb-hover-color);
+}
+
+/* Apply border to all td and th by default */
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: 2px solid var(--fc-border-color);
+}
+
+
+/* Remove border for the first column */
+.fc-theme-standard tr td:first-child,
+.fc-theme-standard tr th:first-child {
+  border: none;
+}
+
+.fc-col-header-cell.fc-day {
+  border: none;
+  border-bottom: 1px solid var(--fc-border-color);
+}
+
+.fc-scrollgrid.fc-scrollgrid-liquid {
+  border: none
+}
+
+
+tbody tr td.fc-timegrid-slot.fc-timegrid-slot-lane {
+  border: none;
+}
+
+tbody tr:nth-child(4n+4) td.fc-timegrid-slot.fc-timegrid-slot-lane {
+  background-color: color-mix(in srgb, var(--fc-neutral-bg-color) 50%, transparent);
+  /* Or your desired color */
+}
+
+tbody tr:nth-child(4n+3) td.fc-timegrid-slot.fc-timegrid-slot-lane {
+  background-color: color-mix(in srgb, var(--fc-neutral-bg-color) 50%, transparent);
+  /* Or your desired color */
+}

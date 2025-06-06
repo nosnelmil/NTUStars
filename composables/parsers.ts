@@ -17,6 +17,10 @@ export function parseCourseInfoFromDB(data: DBCourse) {
     courseCode: courseCode,
     au: au
   }
+  // split schedule into lectures and lessons
+  // lectures are classes of type "LEC/STUDIO"
+  // lessons are classes of other types (e.g. TUT, LAB, etc.)
+
   // Prevent duplicate lectures from being added
   // check if lectures across indexes are the same or unique
   // idea is that lectures are designed to be the same across all indexes in NTU

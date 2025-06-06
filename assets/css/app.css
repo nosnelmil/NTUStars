@@ -1,0 +1,8 @@
+@font-face {
+  font-family: 'avionbold';
+  src: url(./fonts/avionbold.woff);
+}
+
+.brand-font {
+  font-family: 'avionbold';
+}

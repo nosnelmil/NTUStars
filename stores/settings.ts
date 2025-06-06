@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-// import { Dark } from 'quasar'
+import { Dark } from 'quasar';
 
 interface SettingsState {
   openedHelpBefore: boolean;
@@ -14,7 +14,7 @@ export const useSettingsStore = defineStore('settings', {
     return {
       openedHelpBefore: false,
       openedChangesBefore: false,
-      leftDrawerOpen: true,
+      leftDrawerOpen: false,
       darkMode: false
     }
   },
@@ -36,15 +36,15 @@ export const useSettingsStore = defineStore('settings', {
   },
   actions: {
     setSettings() {
-      // Dark.set(this.darkMode)
+      Dark.set(this.darkMode)
     },
     toggleLeftDrawer() {
       this.leftDrawerOpen = !this.leftDrawerOpen
     },
     toggelDarkMode() {
-      // Dark.toggle()
-      // this.darkMode = Dark.isActive
-      // return Dark.isActive
+      Dark.toggle()
+      this.darkMode = Dark.isActive
+      return Dark.isActive
     },
     toggleChangesDialog() {
       this.changesDialogOpen = !this.changesDialogOpen

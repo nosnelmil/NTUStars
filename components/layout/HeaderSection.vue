@@ -1,0 +1,54 @@
+<template>
+  <q-toolbar>
+    <q-toolbar-title class="brand-font">
+      <q-btn flat class="title" :to="'/'">
+        <q-avatar class="q-mb-xs q-mr-xs">
+          <q-img :src="NTUStarsIcon" height="30px" fit="contain" />
+        </q-avatar>
+        NTU Stars
+      </q-btn>
+    </q-toolbar-title>
+    <!-- <q-btn stretch dense flat class="q-px-md text-capitalize" label="Courses" @click="$q.notify({message:'Page under construction!'})"/> -->
+    <q-btn class="text-capitalize q-px-md" stretch dense flat label="changes" @click="toggleChangesModal" />
+    <q-btn class="text-capitalize q-px-md" stretch dense flat label="Help" @click="toggleHelpModal" />
+    <DetailsSearchBar class="q-mr-md" />
+    <q-btn dense flat round class="text-capitalize gt-xs" icon="uil:github" href='https://github.com/Lebarnon/NTUStars'
+      target="_blank" />
+    <q-toggle v-model="darkMode" color="black" checked-icon="dark_mode" unchecked-icon="brightness_5"
+      @update:model-value="onDarkModeToggle" />
+    <q-btn v-if="showRightDrawer" class="q-px-md" stretch dense flat icon="menu" @click="toggleRightDrawer" />
+  </q-toolbar>
+</template>
+
+<script setup>
+import NTUStarsIcon from '@/assets/NTUStars-icon.png'
+import DetailsSearchBar from './DetailsSearchBar.vue';
+import { useSettingsStore } from '../../stores/settings';
+const settingsStore = useSettingsStore()
+const emits = defineEmits(['toggleHelpModal', 'toggleRightDrawer', 'toggleChangesModal'])
+
+defineProps({
+  showRightDrawer: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const darkMode = ref(settingsStore.darkMode)
+
+function onDarkModeToggle() {
+  darkMode.value.val = settingsStore.toggelDarkMode()
+}
+
+function toggleHelpModal() {
+  emits("toggleHelpModal")
+}
+function toggleRightDrawer() {
+  emits("toggleRightDrawer")
+}
+function toggleChangesModal() {
+  emits("toggleChangesModal")
+}
+
+
+</script>

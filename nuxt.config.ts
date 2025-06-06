@@ -10,10 +10,13 @@ export default defineNuxtConfig({
     public: {
       getcoursecontentEndpoint: "",
       getscheduleEndpoint: "",
-      getsemesterEndpoint: ""
+      getsemestersEndpoint: ""
     }
   },
-
+  css: [
+    '@/assets/css/app.css',
+    '@/assets/css/vars.css',
+  ],
   modules: [
     '@nuxt/eslint',
     '@nuxt/icon',
@@ -22,5 +25,12 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
+    'nuxt-quasar-ui',
   ],
+  quasar: {
+    plugins: ['Notify', 'Dialog'],
+    config: {
+      dark: true
+    }
+  }
 })

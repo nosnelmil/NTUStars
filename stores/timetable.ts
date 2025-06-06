@@ -6,6 +6,7 @@ import type FullCalendar from '@fullcalendar/vue3'
 import type { ParsedLesson } from '~/models/parsedLesson';
 import type { DateSelectArg } from '@fullcalendar/core/index.js';
 import type { EventImpl } from '@fullcalendar/core/internal';
+import { Notify } from 'quasar';
 
 const MAX_SHOWING_INDEX = 25
 
@@ -168,17 +169,21 @@ export const useTimetableStore = defineStore('timetable', {
       this.calenderApi = calenderApi
     },
     async addCourse(code: string) {
+      if (this.calenderApi == null) {
+        Notify.create({ message: "Calendar not ready!", color: "negative" })
+        return
+      }
       const courseCode = code.toUpperCase()
       const plan = this.plan
+
       const calendar = this.calenderApi?.getApi().view.calendar
       // check if already in timetable
       if (this.coursesAdded?.[plan]?.[courseCode]) {
-        // Notify.create({ message: "Course already in timetable!", color: "negative" })
-        useToast().add({ title: "Course already in timetable!", description: "Please check your timetable.", color: "error", });
+        Notify.create({ message: "Course already in timetable!", color: "negative" })
         return
       }
       // instantiate if needed
-      // add initial value to coursesAdded
+      // add initial value to coursesAdded (this is so that the right sidebar can show the course)
       (this.coursesAdded[plan] ??= {})[courseCode] = {
         id: "",
         groupId: null,
@@ -224,6 +229,9 @@ export const useTimetableStore = defineStore('timetable', {
       // add the lecture slots for this course
       for (const classInfo of courseInfo.lectures) {
         const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
+        updateClassInfo.borderColor = "white"
+        console.log("Adding lecture", updateClassInfo)
+
         calendar.addEvent(updateClassInfo)
         this.timeTable[plan][courseCode].lectures.push(updateClassInfo)
       }
@@ -232,9 +240,10 @@ export const useTimetableStore = defineStore('timetable', {
       let addedIndex = ""
       for (const [index, indexSchedule] of Object.entries(courseInfo.lessons)) {
         for (const classInfo of indexSchedule) {
-          const parsedClassInfo = addTimetableProp(classInfo, false, backgroundColor)
-          calendar.addEvent(classInfo)
-          this.timeTable[plan][courseCode].lessons.push(parsedClassInfo)
+          const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
+          console.log("Adding lesson", updateClassInfo)
+          calendar.addEvent(updateClassInfo)
+          this.timeTable[plan][courseCode].lessons.push(updateClassInfo)
         }
         addedIndex = index
         break
@@ -268,19 +277,12 @@ export const useTimetableStore = defineStore('timetable', {
         color = this.coursesAdded[plan].custom.backgroundColor
       }
       // Add event to calendar
-      const classInfo: CourseDisplay = {
+      const classInfo: ParsedLesson = {
         id: createEventId() + name,
         groupId: createEventId() + name,
         courseName: name,
         start: selectInfo.startStr,
         end: selectInfo.endStr,
-        isCustom: true,
-        editable: true,
-        classNames: [],
-        isPreview: false,
-        backgroundColor: color,
-        borderColor: color,
-        textColor: 'white',
         courseCode: "custom",
         index: "",
         au: "0",
@@ -292,9 +294,12 @@ export const useTimetableStore = defineStore('timetable', {
         frequency: "",
       }
       const event = addTimetableProp(classInfo, false, color)
+      event.isCustom = true // mark as custom event
+      event.editable = true // allow editing
 
       // save event to timetable & coursesAdded
-      this.timeTable[plan].custom.events.push(event)
+      this.timeTable[plan].custom.events.push(event);
+      (this.coursesAdded[plan] ??= {})["custom"] = event;
       calendar.addEvent(event)
 
     },
@@ -543,7 +548,7 @@ export const useTimetableStore = defineStore('timetable', {
       return color || "#E65100" // fallback color
     }
   },
-  persist: true,
+  // persist: true,
   // {
   //   afterRestore: (ctx) => {
   //     // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
@@ -557,30 +562,15 @@ export const useTimetableStore = defineStore('timetable', {
   // }
 })
 
-function addTimetableProp(classInfo: Partial<CourseDisplay>, isPreview: boolean, color: string): CourseDisplay {
+function addTimetableProp(classInfo: ParsedLesson, isPreview: boolean, color: string): CourseDisplay {
   return ({
-    ...classInfo, // spread the rest of the properties
-    id: createEventId(),
-    courseName: classInfo.courseName || '',
-    start: classInfo.start || '',
-    end: classInfo.end || '',
-    index: classInfo.index || '',
-    courseCode: classInfo.courseCode || '',
-    groupId: isPreview ? classInfo.courseCode + (classInfo.index || '') : null,
+    ...classInfo,
+    groupId: isPreview ? classInfo.courseCode + classInfo.index : null,
     editable: false,
     classNames: ['lesson-body'].concat(isPreview ? ['lighten'] : []),
     isPreview: isPreview,
     backgroundColor: color,
     borderColor: color,
     textColor: 'white',
-    isLoading: false,
-    isCustom: classInfo.isCustom || false,
-    type: classInfo.type || '',
-    group: classInfo.group || '',
-    venue: classInfo.venue || '',
-    date: classInfo.date || '',
-    weeks: classInfo.weeks || '',
-    frequency: classInfo.frequency || '',
-    au: classInfo.au || '',
   })
 }

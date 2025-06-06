@@ -68,9 +68,10 @@ export const useSchedules = defineStore('schedules', {
     },
     async fetchSemesters() {
       // get from database
+      console.info("Fetching semesters from database at endpoint:", useRuntimeConfig().public.getsemestersEndpoint)
       try {
         const response = await fetch(
-          useRuntimeConfig().public.getsemesterEndpoint,
+          useRuntimeConfig().public.getsemestersEndpoint,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -79,16 +80,14 @@ export const useSchedules = defineStore('schedules', {
         if (data) {
           this.semesters = data.semesters
         } else {
-          // Notify.create({ message: `Failed to retrieve semesters`, color: 'negative' })
-          console.warn("Failed to retrieve semesters")
+          Notify.create({ message: `Failed to retrieve semesters`, color: 'negative' })
         }
       } catch (e) {
-        // Notify.create({ message: `Error retrieving semesters: ${e}`, color: 'negative'})
-        console.error("Error retrieving semesters:", e)
+        Notify.create({ message: `Error retrieving semesters: ${e}`, color: 'negative' })
       }
     },
 
-    async fecthCourseSpecificDetails(sem: string, code: string) {
+    async fetchCourseSpecificDetails(sem: string, code: string) {
       const semester = sem.toUpperCase();
       const courseCode = code.toUpperCase();
       const courseInfo = this.getSchedule(semester, courseCode)
@@ -122,7 +121,7 @@ export const useSchedules = defineStore('schedules', {
       }
     },
   },
-  persist: true
+  // persist: true
 })
 
 // {
