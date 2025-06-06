@@ -109,12 +109,12 @@ export const useTimetableStore = defineStore('timetable', {
     getSemester: (state) => {
       return state.semester
     },
-    getSemShortName: (state) => {
+    getSemesterProperName: (state) => {
       if (state.semester) {
         if (state.semester.at(-1) == "S") {
-          return state.semester.replace(";S", " Special Sem")
+          return state.semester.replace(";S", " Special Sem ")
         } else {
-          return state.semester.replace(";", " Sem ")
+          return state.semester.replace(";", " Semester ")
         }
       } else {
         return "Select Semester"

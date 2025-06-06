@@ -5,6 +5,7 @@ interface SettingsState {
   openedHelpBefore: boolean;
   openedChangesBefore: boolean;
   leftDrawerOpen: boolean;
+  rightDrawerOpen?: boolean;
   darkMode: boolean;
   changesDialogOpen?: boolean;
 }
@@ -15,6 +16,7 @@ export const useSettingsStore = defineStore('settings', {
       openedHelpBefore: false,
       openedChangesBefore: false,
       leftDrawerOpen: false,
+      rightDrawerOpen: false,
       darkMode: false
     }
   },
@@ -40,6 +42,12 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleLeftDrawer() {
       this.leftDrawerOpen = !this.leftDrawerOpen
+    },
+    setRightDrawerValue(value: boolean) {
+      this.rightDrawerOpen = value
+    },
+    toggleRightDrawer() {
+      this.rightDrawerOpen = !this.rightDrawerOpen
     },
     toggelDarkMode() {
       Dark.toggle()

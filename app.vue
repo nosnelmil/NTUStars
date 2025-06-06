@@ -3,7 +3,7 @@
     <q-layout view="hHh LpR fff">
       <q-header bordered>
         <HeaderSection :show-right-drawer="showRightDrawer"
-          @toggle-right-drawer="() => { rightDrawerOpen = !rightDrawerOpen }"
+          @toggle-right-drawer="settingsStore.setRightDrawerValue(!settingsStore.rightDrawerOpen)"
           @toggle-help-modal="helpDialogOpen = !helpDialogOpen"
           @toggle-changes-modal="changesDialogOpen = !changesDialogOpen" />
       </q-header>
@@ -17,11 +17,9 @@
         </div>
       </q-drawer>
 
-      <q-drawer v-model="rightDrawerOpen" show-if-above side="right" bordered @show="useTimetableStore().resize()"
+      <q-drawer v-model="settingsStore.rightDrawerOpen" side="right" bordered @show="useTimetableStore().resize()"
         @hide="useTimetableStore().resize()">
         <SemCourseSelector />
-        <div>{{ rightDrawerOpen ? 'open' : 'hidden' }}</div>
-
       </q-drawer>
 
       <q-dialog v-model="changesDialogOpen">
@@ -58,7 +56,6 @@ const settingsStore = useSettingsStore()
 const timetableStore = useTimetableStore()
 const helpDialogOpen = ref(useSettingsStore().getInitalHelpModalState)
 const changesDialogOpen = ref(useSettingsStore().getInitalChangesModalState)
-const rightDrawerOpen = ref(false)
 const showRightDrawer = ref(false)
 const route = useRoute()
 
@@ -66,12 +63,13 @@ onMounted(() => {
   settingsStore.setSettings()
 })
 
-watch(() => route.fullPath, () => {
+watch(() => [route.fullPath, timetableStore.getSemester], () => {
   console.info("Route changed to: ", route.fullPath, route.fullPath == '/' && timetableStore.getSemester != null)
   if (route.fullPath == '/' && timetableStore.getSemester != null) {
     showRightDrawer.value = true
+    settingsStore.setRightDrawerValue(true)
   } else {
-    rightDrawerOpen.value = false
+    settingsStore.setRightDrawerValue(false)
     showRightDrawer.value = false
     settingsStore.leftDrawerOpen = false
   }
