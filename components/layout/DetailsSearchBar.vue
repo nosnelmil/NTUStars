@@ -4,14 +4,12 @@
       @submit="onSubmit"
     >
         <q-input 
-          dark 
-          dense 
-          standout 
-          v-model="search"
+          v-model="search" 
+          dense
+          filled
           placeholder="Course Code" 
-          :input-class="`text-left ${!!search ? 'text-primary' : 'text-white'}`" 
           class="q-ml-md">
-          <template v-slot:append>
+          <template #append>
             <q-icon v-if="search === ''" name="search" />
             <q-icon v-else name="clear" class="cursor-pointer" @click="search = ''" />
           </template>
@@ -40,7 +38,7 @@ async function onSubmit(){
     return
   }
 
-  const routeData = router.resolve({name: 'coursedetails', params: {details: [timetableStore.getSemester, search.value]}});
+  const routeData = router.resolve(`/courses-${timetableStore.getSemester}/${search.value}`)
   window.open(routeData.href, '_blank');
   search.value = ''
 }

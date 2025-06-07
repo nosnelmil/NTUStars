@@ -7,11 +7,14 @@
       <!-- <q-btn stretch color="primary" class="text-capitalize" icon="article" href='https://forms.gle/4CV1ZiXkRS87P8cT9' target="_blank" label=""/> -->
       <q-btn 
         class="text-capitalize text-bold" 
-        icon="~/assets/kofi_logo.png" 
         href='https://ko-fi.com/ntustarsplanner' 
-        target="_blank" label="Support This Project!" 
+        target="_blank" 
         color="white" 
         text-color="primary">
+        <q-avatar class="q-mr-xs" size="30px">
+          <q-img :src="KofiIcon" fit="contain" />
+        </q-avatar>
+        <div>Support This Project!</div>
         <q-tooltip class="bg-dark" anchor="top middle" self="bottom middle" :offset="[10, 10]" max-width="500px">
           <div class="q-ma-md">
             <p class="text-h6">Hey NTU Friends!</p>
@@ -32,4 +35,5 @@
 </template>
 
 <script setup>
+import KofiIcon from '~/assets/kofi_logo.png'
 </script>

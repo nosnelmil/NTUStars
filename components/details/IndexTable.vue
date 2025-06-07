@@ -8,7 +8,7 @@
         row-key="index"
       >
   
-        <template v-slot:header="props">
+        <template #header="props">
           <q-tr :props="props">
             <q-th auto-width />
             <q-th
@@ -21,7 +21,7 @@
           </q-tr>
         </template>
   
-        <template v-slot:body="props">
+        <template #body="props">
           <q-tr :props="props">
             <q-td auto-width>
               <q-btn size="sm" color="accent" round dense @click="props.expand = !props.expand" :icon="props.expand ? 'remove' : 'add'" />
@@ -46,6 +46,7 @@
   </template>
 
 <script setup>
+import IndexDetailTable from './IndexDetailTable.vue' // Adjust the path as needed
 const props = defineProps(["indexes"])
 
 const columns = [
@@ -57,5 +58,5 @@ const rows = computed(() => {
     const result = []
     indexes.forEach(index => result.push({'index': index}))
     return result
-    })
+})
 </script>

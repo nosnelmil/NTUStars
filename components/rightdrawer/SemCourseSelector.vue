@@ -1,7 +1,7 @@
 <template>
   <div class="q-mx-md">
     <div class="q-pa-sm">
-      <q-toolbar class="bg-primary text-white rounded-borders">
+      <q-toolbar class="rounded-borders">
         <q-toolbar-title class="text-center text-weight-bold">
           {{ title }}
         </q-toolbar-title>

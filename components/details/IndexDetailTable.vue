@@ -5,7 +5,7 @@
         :columns="columns"
         row-key="name"
       >
-        <template v-slot:body="props">
+        <template #body="props">
           <q-tr :props="props">
             <q-td
               v-for="col in props.cols"
@@ -22,6 +22,9 @@
 
 <script setup>
 import { parseStartTime, parseEndTime, parseWeeks } from '../../composables/parsers';
+
+defineProps(['rows'])
+
 const columns = [
   { name: 'name', required: true, label: 'Day', align: 'left', field: 'day', sortable: true },
   { name: 'type', label: 'Type', field: 'type', sortable:true },

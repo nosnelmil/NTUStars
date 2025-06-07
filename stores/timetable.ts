@@ -74,7 +74,7 @@ export const useTimetableStore = defineStore('timetable', {
       colors: { 0: [...COLORS] },
       isLoading: false,
       // The overall selected semester
-      semester: "2025;1",
+      semester: null,
       // The plan number of the timetable
       currentPlan: 0,
       // Plans that are created

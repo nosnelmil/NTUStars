@@ -8,12 +8,9 @@
         NTU Stars
       </q-btn>
     </q-toolbar-title>
-    <!-- <q-btn stretch dense flat class="q-px-md text-capitalize" label="Courses" @click="$q.notify({message:'Page under construction!'})"/> -->
+    <DetailsSearchBar v-if="timetableStore.getSemester != null" class="q-mr-md" />
     <q-btn class="text-capitalize q-px-md" stretch dense flat label="changes" @click="toggleChangesModal" />
     <q-btn class="text-capitalize q-px-md" stretch dense flat label="Help" @click="toggleHelpModal" />
-    <DetailsSearchBar class="q-mr-md" />
-    <q-btn dense flat round class="text-capitalize gt-xs" icon="uil:github" href='https://github.com/Lebarnon/NTUStars'
-      target="_blank" />
     <q-toggle v-model="darkMode" color="black" checked-icon="dark_mode" unchecked-icon="brightness_5"
       @update:model-value="onDarkModeToggle" />
     <q-btn v-if="showRightDrawer" class="q-px-md" stretch dense flat icon="menu" @click="toggleRightDrawer" />
@@ -25,6 +22,7 @@ import NTUStarsIcon from '@/assets/NTUStars-icon.png'
 import DetailsSearchBar from './DetailsSearchBar.vue';
 import { useSettingsStore } from '../../stores/settings';
 const settingsStore = useSettingsStore()
+const timetableStore = useTimetableStore()
 const emits = defineEmits(['toggleHelpModal', 'toggleRightDrawer', 'toggleChangesModal'])
 
 defineProps({

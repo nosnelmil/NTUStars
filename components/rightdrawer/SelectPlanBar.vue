@@ -1,5 +1,5 @@
 <template>
-    <q-btn-dropdown color="primary" :label="currentPlan.planName" class="text-capitalize">
+    <q-btn-dropdown flat :label="currentPlan.planName" class="text-capitalize">
       <q-list>
         <q-item v-for="plan in plansObject" :key="plan.planNumber" v-close-popup clickable :disable="currentPlan.planNumber === plan.planNumber" @click="onItemClick(plan)">
           <q-item-section>
