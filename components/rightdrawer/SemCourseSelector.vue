@@ -12,7 +12,7 @@
     </div>
     <q-separator spaced />
     <SelectedList />
-    <q-btn flat icon="refresh" class="q-ml-auto" @click="handleReset" label="reset" />
+    <q-btn flat icon="refresh" class="q-ml-auto text-capitalize q-mb-md" label="reset" @click="handleReset" />
   </div>
 </template>
 

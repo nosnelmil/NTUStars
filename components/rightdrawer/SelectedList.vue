@@ -1,6 +1,6 @@
 <template>
-  <q-list class="rounded-borders" stylMe="width: 100%;">
-    <div class="row justify-between items-center q-mb-md">
+  <q-list class="rounded-borders" style="width: 100%;">
+    <div class="row justify-between items-center q-my-sm">
       <q-item-label header>Courses</q-item-label>
       <SelectPlanBar />
     </div>
@@ -11,8 +11,8 @@
       >
         <SelectedListItem 
           :course="course" 
-          @handle-remove="(e) => handleRemove(course)"
-          :semester="timetableStore.getSemester" />
+          :semester="timetableStore.getSemester"
+          @handle-remove="(e) => handleRemove(course)" />
         <q-separator spaced />
       </template>
       <q-item-label header>
@@ -20,7 +20,7 @@
         <span v-if="timetableStore.getTotalAus">
           {{ timetableStore.getTotalAus}}
         </span>
-        <span class="text-grey-8 q-gutter-xs" v-else>
+        <span v-else class="text-grey-8 q-gutter-xs">
           <q-spinner color="primary" size="1em" :thickness="1" />
         </span>
       </q-item-label>
