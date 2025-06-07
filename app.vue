@@ -8,15 +8,6 @@
           @toggle-changes-modal="changesDialogOpen = !changesDialogOpen" />
       </q-header>
 
-      <q-drawer v-model="settingsStore.leftDrawerOpen" side="left" bordered @show="useTimetableStore().resize()"
-        @hide="useTimetableStore().resize()">
-        <!-- <ChangeLogList /> -->
-        <PreviewListSection />
-        <div class="q-mini-drawer-hide absolute" style="top: 15px; right: -17px">
-          <q-btn dense round unelevated color="accent" icon="chevron_left" @click="toggleLeftDrawer" />
-        </div>
-      </q-drawer>
-
       <q-drawer v-model="settingsStore.rightDrawerOpen" side="right" bordered @show="useTimetableStore().resize()"
         @hide="useTimetableStore().resize()">
         <SemCourseSelector />
@@ -50,7 +41,6 @@ import FooterSection from './components/layout/FooterSection.vue';
 import HelpStepper from './components/HelpStepper.vue';
 import SemCourseSelector from './components/rightdrawer/SemCourseSelector.vue';
 import ChangeLogList from './components/changelogs/ChangeLogList.vue';
-import PreviewListSection from './components/preview/PreviewListSection.vue';
 
 const settingsStore = useSettingsStore()
 const timetableStore = useTimetableStore()
@@ -74,9 +64,6 @@ watch(() => [route.fullPath, timetableStore.getSemester], () => {
   }
 }, { immediate: true })
 
-function toggleLeftDrawer() {
-  settingsStore.toggleLeftDrawer()
-}
 </script>
 
 <style scoped>

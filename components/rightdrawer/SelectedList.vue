@@ -10,9 +10,10 @@
         :key="course.courseCode"
       >
         <SelectedListItem 
-          :course="course" 
-          :semester="timetableStore.getSemester"
-          @handle-remove="(e) => handleRemove(course)" />
+          :course="course"
+          :course-indexes="useSchedules().getCourseIndexes(timetableStore.getSemester, course.courseCode)" 
+          @handle-swap-index="({index}) => timetableStore.swapIndex(course.courseCode, index)"
+          @handle-remove="() => handleRemove(course)" />
         <q-separator spaced />
       </template>
       <q-item-label header>
@@ -37,11 +38,11 @@
       </template>
   </q-list>
 </template>
-
 <script setup>
 import { useTimetableStore } from '@/stores/timetable';
 import SelectedListItem from './SelectedListItem.vue';
 import SelectPlanBar from './SelectPlanBar.vue';
+
 
 const timetableStore = useTimetableStore()
 function handleRemove(course){

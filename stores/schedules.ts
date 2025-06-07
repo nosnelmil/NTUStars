@@ -27,7 +27,27 @@ export const useSchedules = defineStore('schedules', {
     },
     getSemesters: (state) => Object.entries(state.semesters)
       .map(([key, value]) => { return ({ label: value, value: key }) })
-      .sort((a, b) => b.label.localeCompare(a.label))
+      .sort((a, b) => b.label.localeCompare(a.label)),
+
+    getCourseIndexes: (state) => {
+      return (semester: string, courseCode: string) => {
+        const parsedCourse = state.coursesInfo[semester]?.[courseCode];
+        if (parsedCourse && 'lessons' in parsedCourse) {
+          return Array.from(Object.keys(parsedCourse.lessons)).sort((a, b) => a.localeCompare(b))
+        }
+        return [];
+      }
+    },
+    getParsedCourseInfo: (state) => {
+      return (semester: string, courseCode: string, index: string) => {
+        const parsedCourse = state.coursesInfo[semester]?.[courseCode];
+        console.log("getParsedCourseInfo", semester, courseCode, index, parsedCourse)
+        if (parsedCourse && 'lessons' in parsedCourse) {
+          return parsedCourse.lessons[index] || null;
+        }
+        return null;
+      }
+    }
   },
   actions: {
     async fetchCourseSchedule(semester: string, code: string) {

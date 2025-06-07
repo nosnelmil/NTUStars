@@ -8,15 +8,13 @@ import type { DateSelectArg } from '@fullcalendar/core/index.js';
 import type { EventImpl } from '@fullcalendar/core/internal';
 import { Notify } from 'quasar';
 import { COLORS, DEFAULT_PLAN_NUMBER } from '~/constants/timetable';
-
-const MAX_SHOWING_INDEX = 25
+import type { CourseDisplay } from '~/models/courseDisplay';
 
 interface TimetableState {
   calenderApi: typeof FullCalendar | null;
   coursesAdded: CoursesAdded;
   showingPreview: ShowingPreview;
   previewCourseCode: string | null;
-  maxShowingIndex: number;
   showingPreviewIndexCount: number;
   totalIndexCount: number;
   previewIndexes: { [index: string]: boolean };
@@ -37,17 +35,6 @@ interface CoursesAdded {
 
 interface ShowingPreview {
   [plan: number]: CourseDisplay[]
-}
-
-interface CourseDisplay extends ParsedLesson {
-  editable: boolean;
-  classNames: string[];
-  isPreview: boolean;
-  backgroundColor: string;
-  borderColor: string;
-  textColor: string;
-  isLoading?: boolean;
-  isCustom?: boolean; // for custom events
 }
 
 interface Timetable {
@@ -73,8 +60,6 @@ export const useTimetableStore = defineStore('timetable', {
       // Preview that are currently showing
       showingPreview: {},
       previewCourseCode: null,
-      // Constant to set the maximum index that can be previewed
-      maxShowingIndex: MAX_SHOWING_INDEX,
       // Total number of Indexes showing as preview for a selected course code
       showingPreviewIndexCount: 1,
       // Total number of availble indexes for the course selected for preview
@@ -404,11 +389,6 @@ export const useTimetableStore = defineStore('timetable', {
           if (index == showing.index) {
             continue
           }
-          if (this.showingPreviewIndexCount >= MAX_SHOWING_INDEX && !this.isIndexPreviewSaved(index)) {
-            // skip adding index
-            this.previewIndexes[index] = false
-            continue
-          }
           for (const classInfo of indexSchedule) {
             const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
             showingPreview.push(previewEvent)
@@ -509,10 +489,27 @@ export const useTimetableStore = defineStore('timetable', {
     },
     // swap two given indexes
     swapIndex(courseCode: string, newIndex: string) {
+      if (!this.semester || !courseCode || !newIndex) {
+        useToast().add({ title: "Please select a semester and course code", description: "Cannot swap index.", color: "error", });
+        return
+      }
       const currentPlan = this.currentPlan
       const calendar = this.calenderApi?.getApi().view.calendar
       // get event object of newIndex
-      const newLessons = this.showingPreview[currentPlan].filter(e => e.index == newIndex)
+      let newLessons: CourseDisplay[] = []
+      if (!this.showingPreview[currentPlan]) {
+        // get from schedule store and create the display object
+        const scheduleStore = useSchedules()
+        const parsedLessons = scheduleStore.getParsedCourseInfo(this.semester, courseCode, newIndex)
+        console.log("Parsed lessons", parsedLessons)
+        if (!parsedLessons) {
+          useToast().add({ title: "Unexpected Error", description: "Please try again.", color: "error", });
+          return
+        }
+        newLessons = parsedLessons.map(e => addTimetableProp(e, false, this.coursesAdded[currentPlan][courseCode].backgroundColor))
+      } else {
+        newLessons = this.showingPreview[currentPlan].filter(e => e.index == newIndex)
+      }
       // remove showingPreview
       this.resetPreview()
 
@@ -643,7 +640,6 @@ export const useTimetableStore = defineStore('timetable', {
   //     ctx.store.previewIndexes = {}
   //     ctx.store.showingPreviewIndexCount = 1
   //     ctx.store.totalIndexCount = 0
-  //     ctx.store.maxShowingIndex = MAX_SHOWING_INDEX
   //     ctx.store.previewCourseCode = null
   //   },
   // }
