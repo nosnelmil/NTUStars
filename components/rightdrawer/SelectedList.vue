@@ -1,6 +1,9 @@
 <template>
   <q-list class="rounded-borders" stylMe="width: 100%;">
-    <q-item-label header>Courses</q-item-label>
+    <div class="row justify-between items-center q-mb-md">
+      <q-item-label header>Courses</q-item-label>
+      <SelectPlanBar />
+    </div>
     <template v-if="Object.keys(timetableStore.getCoursesAdded).length > 0">
       <template 
       v-for="course in Object.values(timetableStore.getCoursesAdded)"
@@ -23,7 +26,7 @@
       </q-item-label>
     </template>
       <template v-else>
-        <q-item clickable>
+        <q-item>
           <q-item-section>
             <q-item-label class="row item-center" lines="1">
               <span class="text-weight-medium">No Course Selected</span>
@@ -38,6 +41,7 @@
 <script setup>
 import { useTimetableStore } from '@/stores/timetable';
 import SelectedListItem from './SelectedListItem.vue';
+import SelectPlanBar from './SelectPlanBar.vue';
 
 const timetableStore = useTimetableStore()
 function handleRemove(course){

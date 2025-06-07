@@ -1,7 +1,7 @@
 <template>
   <div class="row items-start">
     <q-form ref="form" class="full-width" @submit="onSubmit">
-      <q-input v-model="search" label="Enter Course Code" debounce="500" filled clearable
+      <q-input v-model="search" label="Enter Course Code" debounce="500" filled clearable dense
         :color="settingsStore.darkMode ? 'white' : 'primary'" :loading="isLoading" placeholder="Search"
         :hint="isLoading ? 'Searching for a new course code might take awhile' : 'Try searching SC1005'" lazy-rules
         :rules="[val => validateCourseCode(val) || 'Please enter a valid course code']">

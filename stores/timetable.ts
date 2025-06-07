@@ -7,6 +7,7 @@ import type { ParsedLesson } from '~/models/parsedLesson';
 import type { DateSelectArg } from '@fullcalendar/core/index.js';
 import type { EventImpl } from '@fullcalendar/core/internal';
 import { Notify } from 'quasar';
+import { COLORS, DEFAULT_PLAN_NUMBER } from '~/constants/timetable';
 
 const MAX_SHOWING_INDEX = 25
 
@@ -19,22 +20,23 @@ interface TimetableState {
   showingPreviewIndexCount: number;
   totalIndexCount: number;
   previewIndexes: { [index: string]: boolean };
-  savedPreviewIndexes: { [semester: string]: { [courseCode: string]: { [index: string]: boolean } } };
+  savedPreviewIndexes: { [plan: string]: { [courseCode: string]: { [index: string]: boolean } } };
   timeTable: Timetable;
-  colors: string[];
+  colors: { [plan: number]: string[] };
   isLoading: boolean;
   semester: string | null;
-  plan: number;
+  currentPlan: number;
+  plans: { [plan: number]: string }; // Plan number: Plan name mapping
 }
 
 interface CoursesAdded {
-  [plan: string]: {
+  [plan: number]: {
     [courseCode: string]: CourseDisplay
   }
 }
 
 interface ShowingPreview {
-  [plan: string]: CourseDisplay[]
+  [plan: number]: CourseDisplay[]
 }
 
 interface CourseDisplay extends ParsedLesson {
@@ -60,6 +62,7 @@ interface Timetable {
     };
   };
 }
+
 export const useTimetableStore = defineStore('timetable', {
   state: (): TimetableState => {
     return {
@@ -83,28 +86,30 @@ export const useTimetableStore = defineStore('timetable', {
       // All Events objects that are shown on the timetable
       timeTable: {},
       // All possible event colors left
-      colors: ['#0D47A1', '#E65100', '#FF6F00', '#F57F17', '#827717', '#33691E', '#1B5E20', '#B71C1C', '#880E4F', '#4A148C', '#311B92', '#1A237E', '#01579B', '#006064', '#004D40', '#BF360C', '#3E2723'],
+      colors: { 0: [...COLORS] },
       isLoading: false,
       // The overall selected semester
-      semester: null,
+      semester: "2025;1",
       // The plan number of the timetable
-      plan: 0,
+      currentPlan: 0,
+      // Plans that are created
+      plans: { [DEFAULT_PLAN_NUMBER]: "Default Plan" },
     }
   },
 
   getters: {
     getTimeTable: (state) => {
-      return state.timeTable[state.plan]
+      return state.timeTable[state.currentPlan]
     },
     getCourseCodeShowingPreview: (state) => {
-      if (state.plan in state.showingPreview) {
-        return state.showingPreview[state.plan].length > 0
-          ? state.showingPreview[state.plan][0].courseCode
+      if (state.currentPlan in state.showingPreview) {
+        return state.showingPreview[state.currentPlan].length > 0
+          ? state.showingPreview[state.currentPlan][0].courseCode
           : null
       }
     },
     getCoursesAdded: (state) => {
-      return { ...state.coursesAdded[state.plan] }
+      return { ...state.coursesAdded[state.currentPlan] }
     },
     getSemester: (state) => {
       return state.semester
@@ -121,17 +126,17 @@ export const useTimetableStore = defineStore('timetable', {
       }
     },
     getTotalAus: (state) => {
-      if (state.plan in state.coursesAdded) {
-        return Object.keys(state.coursesAdded[state.plan])
+      if (state.currentPlan in state.coursesAdded) {
+        return Object.keys(state.coursesAdded[state.currentPlan])
           .reduce((prev, key) =>
-            prev + parseInt(state.coursesAdded[state.plan][key].au)
+            prev + parseInt(state.coursesAdded[state.currentPlan][key].au)
             , 0)
       } else {
         return 0
       }
     },
     getShowingIndex: (state) => {
-      return (courseCode: string) => courseCode ? state.coursesAdded[state.plan][courseCode].index : null
+      return (courseCode: string) => courseCode ? state.coursesAdded[state.currentPlan][courseCode].index : null
     },
     getPreviewCourseCode: (state) => {
       // if(state.semester in state.showingPreview && state.showingPreview[state.semester].length > 0){
@@ -143,22 +148,37 @@ export const useTimetableStore = defineStore('timetable', {
       return Object.entries(state.previewIndexes)
     },
     getSavedPreviewIndexes: (state) =>
-      state.savedPreviewIndexes[state.plan]?.[state.plan]
-        ? Object.entries(state.savedPreviewIndexes[state.plan][state.previewCourseCode || ""])
+      state.savedPreviewIndexes[state.currentPlan]?.[state.currentPlan]
+        ? Object.entries(state.savedPreviewIndexes[state.currentPlan][state.previewCourseCode || ""])
         : [],
 
     isIndexPreviewSaved: (state) => {
-      return (index: string) => state.previewCourseCode && state.savedPreviewIndexes[state.plan]?.[state.previewCourseCode]?.[index]
-    }
+      return (index: string) => state.previewCourseCode && state.savedPreviewIndexes[state.currentPlan]?.[state.previewCourseCode]?.[index]
+    },
+    getPlans: (state) => {
+      return Object.entries(state.plans).map(([planNumber, planName]) => ({
+        planNumber: parseInt(planNumber),
+        planName: planName
+      }))
+    },
+    getCurrentPlan: (state) => {
+      return {
+        planNumber: state.currentPlan,
+        planName: state.plans[state.currentPlan] || "Unnamed Plan"
+      }
+    },
   },
 
   actions: {
     setTimeTable() {
-      if (Object.keys(this.timeTable).length == 0) return
+      if (!this.timeTable || !this.timeTable[this.currentPlan] || Object.keys(this.timeTable).length === 0) return;
+
       for (const courseCodeObj of Object.values(this.getTimeTable)) {
+        if (!courseCodeObj) continue
         for (const timeTableItems of Object.values(courseCodeObj)) {
           if (timeTableItems) {
             for (const timeTableItem of timeTableItems) {
+              if (!timeTableItem) continue
               this.calenderApi?.getApi().view.calendar.addEvent(timeTableItem)
             }
           }
@@ -169,22 +189,25 @@ export const useTimetableStore = defineStore('timetable', {
       this.calenderApi = calenderApi
     },
     async addCourse(code: string) {
+      if (!code || code.length !== 6) {
+        return
+      }
       if (this.calenderApi == null) {
         Notify.create({ message: "Calendar not ready!", color: "negative" })
         return
       }
       const courseCode = code.toUpperCase()
-      const plan = this.plan
+      const currentPlan = this.currentPlan
 
       const calendar = this.calenderApi?.getApi().view.calendar
       // check if already in timetable
-      if (this.coursesAdded?.[plan]?.[courseCode]) {
+      if (this.coursesAdded?.[currentPlan]?.[courseCode]) {
         Notify.create({ message: "Course already in timetable!", color: "negative" })
         return
       }
       // instantiate if needed
       // add initial value to coursesAdded (this is so that the right sidebar can show the course)
-      (this.coursesAdded[plan] ??= {})[courseCode] = {
+      (this.coursesAdded[currentPlan] ??= {})[courseCode] = {
         id: "",
         groupId: null,
         editable: false,
@@ -212,7 +235,7 @@ export const useTimetableStore = defineStore('timetable', {
       const courseInfo = this.semester ? await scheduleStore.fetchCourseSchedule(this.semester, courseCode) : null
       if (!courseInfo) {
         // course does not exist / there is no courseInfo
-        delete this.coursesAdded[plan][courseCode]
+        delete this.coursesAdded[currentPlan][courseCode]
         return null
       }
 
@@ -221,7 +244,7 @@ export const useTimetableStore = defineStore('timetable', {
 
       // store ids in state so its easier to delete later
       // instantiate
-      (this.timeTable[this.plan] ??= {})[courseCode] = {
+      (this.timeTable[this.currentPlan] ??= {})[courseCode] = {
         "lectures": [],
         "lessons": [],
       };
@@ -233,7 +256,7 @@ export const useTimetableStore = defineStore('timetable', {
         console.log("Adding lecture", updateClassInfo)
 
         calendar.addEvent(updateClassInfo)
-        this.timeTable[plan][courseCode].lectures.push(updateClassInfo)
+        this.timeTable[currentPlan][courseCode].lectures.push(updateClassInfo)
       }
 
       // add the first non-lecture slot for this course
@@ -243,14 +266,14 @@ export const useTimetableStore = defineStore('timetable', {
           const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
           console.log("Adding lesson", updateClassInfo)
           calendar.addEvent(updateClassInfo)
-          this.timeTable[plan][courseCode].lessons.push(updateClassInfo)
+          this.timeTable[currentPlan][courseCode].lessons.push(updateClassInfo)
         }
         addedIndex = index
         break
       }
       // update courses added state
-      this.coursesAdded[plan][courseCode] = {
-        ...this.coursesAdded[plan][courseCode],
+      this.coursesAdded[currentPlan][courseCode] = {
+        ...this.coursesAdded[currentPlan][courseCode],
         isLoading: false,
         courseName: courseInfo.courseName,
         index: addedIndex,
@@ -260,21 +283,21 @@ export const useTimetableStore = defineStore('timetable', {
       }
     },
     addCustomEvent(selectInfo: DateSelectArg, name: string) {
-      const plan = this.plan
+      const currentPlan = this.currentPlan
       const calendar = this.calenderApi?.getApi().view.calendar
       // Add to custom events if needed
       let color = ""
-      if (!(plan in this.timeTable)) {
-        this.timeTable[plan] = {}
+      if (!(currentPlan in this.timeTable)) {
+        this.timeTable[currentPlan] = {}
       }
-      if (!(this.timeTable?.[plan]?.["custom"]?.["events"])) {
-        (this.timeTable[plan] ??= {})["custom"] = {
+      if (!(this.timeTable?.[currentPlan]?.["custom"]?.["events"])) {
+        (this.timeTable[currentPlan] ??= {})["custom"] = {
           "events": []
         };
         color = this.getRandomColor()
       }
       else {
-        color = this.coursesAdded[plan].custom.backgroundColor
+        color = this.coursesAdded[currentPlan].custom.backgroundColor
       }
       // Add event to calendar
       const classInfo: ParsedLesson = {
@@ -298,13 +321,13 @@ export const useTimetableStore = defineStore('timetable', {
       event.editable = true // allow editing
 
       // save event to timetable & coursesAdded
-      this.timeTable[plan].custom.events.push(event);
-      (this.coursesAdded[plan] ??= {})["custom"] = event;
+      this.timeTable[currentPlan].custom.events.push(event);
+      (this.coursesAdded[currentPlan] ??= {})["custom"] = event;
       calendar.addEvent(event)
 
     },
     updateCustomEvent(event: EventImpl) {
-      this.timeTable[this.plan].custom?.events.forEach((e) => {
+      this.timeTable[this.currentPlan].custom?.events.forEach((e) => {
         if (e.id == event.id) {
           e.courseName = event.extendedProps.courseName
           e.start = event.startStr
@@ -313,47 +336,47 @@ export const useTimetableStore = defineStore('timetable', {
       })
     },
     removeCourse(courseCode: string) {
-      const plan = this.plan
+      const currentPlan = this.currentPlan
       const calendar = this.calenderApi?.getApi().view.calendar
-      if (!(plan in this.timeTable) || !(courseCode in this.timeTable[plan])) {
+      if (!(currentPlan in this.timeTable) || !(courseCode in this.timeTable[currentPlan])) {
         // Notify.create("Unable to remove course")
         useToast().add({ title: "Unable to remove course", description: "Please check your timetable.", color: "error", });
         return
       }
       // remove from calendar
       if (courseCode != "custom") {
-        if ('lectures' in this.timeTable[plan][courseCode]) {
-          for (const event of this.timeTable[plan][courseCode]['lectures']) {
+        if ('lectures' in this.timeTable[currentPlan][courseCode]) {
+          for (const event of this.timeTable[currentPlan][courseCode]['lectures']) {
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[plan][courseCode]['lectures'] = []
+          this.timeTable[currentPlan][courseCode]['lectures'] = []
         }
-        if ('lessons' in this.timeTable[plan][courseCode]) {
-          for (const event of this.timeTable[plan][courseCode]['lessons']) {
+        if ('lessons' in this.timeTable[currentPlan][courseCode]) {
+          for (const event of this.timeTable[currentPlan][courseCode]['lessons']) {
             calendar.getEventById(event.id).remove()
           }
-          this.timeTable[plan][courseCode]['lessons'] = []
+          this.timeTable[currentPlan][courseCode]['lessons'] = []
         }
-        if (plan in this.showingPreview && this.showingPreview[plan].length > 0) {
+        if (currentPlan in this.showingPreview && this.showingPreview[currentPlan].length > 0) {
           // remove from showingPreview if showingPreview is the deleted coursecode
-          if (courseCode == this.showingPreview[plan][0].courseCode) {
+          if (courseCode == this.showingPreview[currentPlan][0].courseCode) {
             this.resetPreview()
             // reset all indexes
             this.previewIndexes = {}
           }
         }
       } else {
-        if (this.timeTable[plan].custom?.events) {
-          for (const event of this.timeTable[plan].custom.events) {
+        if (this.timeTable[currentPlan].custom?.events) {
+          for (const event of this.timeTable[currentPlan].custom.events) {
             calendar.getEventById(event.id)?.remove()
           }
         }
-        delete this.timeTable[plan][courseCode];
+        delete this.timeTable[currentPlan][courseCode];
       }
 
-      const colorUsed = this.coursesAdded[plan][courseCode].backgroundColor
+      const colorUsed = this.coursesAdded[currentPlan][courseCode].backgroundColor
       this.returnColor(colorUsed)
-      delete this.coursesAdded[plan][courseCode]
+      delete this.coursesAdded[currentPlan][courseCode]
     },
 
     async setPreview(courseCode: string) {
@@ -362,10 +385,10 @@ export const useTimetableStore = defineStore('timetable', {
         return
       }
       const scheduleStore = useSchedules()
-      const plan = this.plan
+      const currentPlan = this.currentPlan
       const calendar = this.calenderApi?.getApi().view.calendar
       const courseInfo = await scheduleStore.fetchCourseSchedule(this.semester, courseCode)
-      const showing = this.coursesAdded[plan][courseCode]
+      const showing = this.coursesAdded[currentPlan][courseCode]
       const showingPreview = []
 
       this.resetPreview()
@@ -375,7 +398,7 @@ export const useTimetableStore = defineStore('timetable', {
         this.previewCourseCode = courseCode
         this.totalIndexCount = 0
         this.previewIndexes[showing.index] = true;
-        (this.savedPreviewIndexes[plan] ??= {})[courseCode] ??= {};
+        (this.savedPreviewIndexes[currentPlan] ??= {})[courseCode] ??= {};
         for (const [index, indexSchedule] of Object.entries(courseInfo.lessons)) {
           this.totalIndexCount += 1
           if (index == showing.index) {
@@ -400,14 +423,14 @@ export const useTimetableStore = defineStore('timetable', {
         // Notify.create({ message: "There are no other indexes for this module.", type: "negative" })
         useToast().add({ title: "There are no other indexes for this module.", description: "Please check the course code.", color: "error", });
       }
-      this.showingPreview[plan] = showingPreview
+      this.showingPreview[currentPlan] = showingPreview
     },
 
     // Temp previews are maintain with the help of paginations
     async addTempPreviews(indexesToAdd: string[]) {
       const courseCode = this.getPreviewCourseCode
       const scheduleStore = useSchedules()
-      const plan = this.plan
+      const currentPlan = this.currentPlan
       const calendar = this.calenderApi?.getApi().view.calendar
 
       if (!this.semester || !this.previewCourseCode) {
@@ -419,13 +442,13 @@ export const useTimetableStore = defineStore('timetable', {
         return
       }
       const courseInfo = await scheduleStore.fetchCourseSchedule(this.semester, courseCode)
-      const showing = this.coursesAdded[plan][courseCode]
+      const showing = this.coursesAdded[currentPlan][courseCode]
 
       if (courseInfo) {
         for (const indexToAdd of indexesToAdd) {
           for (const classInfo of courseInfo.lessons[indexToAdd]) {
             const previewEvent = addTimetableProp(classInfo, true, showing.backgroundColor)
-            this.showingPreview[plan].push(previewEvent)
+            this.showingPreview[currentPlan].push(previewEvent)
             calendar.addEvent(previewEvent)
           }
           this.previewIndexes[indexToAdd] = true
@@ -436,16 +459,16 @@ export const useTimetableStore = defineStore('timetable', {
 
     // remove previews excluding saved ones from the timetable (used during the change in pages in preview list)
     removeTempPreviews(indexesToRemove: string[]) {
-      const plan = this.plan
-      if (!(plan in this.showingPreview)) return
+      const currentPlan = this.currentPlan
+      if (!(currentPlan in this.showingPreview)) return
       const calendar = this.calenderApi?.getApi().view.calendar
       const indexesToRemoveSet = new Set(indexesToRemove)
-      for (let i = this.showingPreview[plan].length - 1; i >= 0; i--) {
-        const event = this.showingPreview[plan][i]
+      for (let i = this.showingPreview[currentPlan].length - 1; i >= 0; i--) {
+        const event = this.showingPreview[currentPlan][i]
         // if the event is saved or showing
         if (!indexesToRemoveSet.has(event.index)) continue
         calendar.getEventById(event.id)?.remove()
-        this.showingPreview[plan].splice(i, 1)
+        this.showingPreview[currentPlan].splice(i, 1)
         this.showingPreviewIndexCount -= 1
         this.previewIndexes[event.index] = false
       }
@@ -458,7 +481,7 @@ export const useTimetableStore = defineStore('timetable', {
         useToast().add({ title: "No course code selected", description: "Cannot save preview.", color: "error", });
         return
       }
-      ((this.savedPreviewIndexes[this.plan] ??= {})[this.previewCourseCode] ??= {})[indexToAdd] = true;
+      ((this.savedPreviewIndexes[this.currentPlan] ??= {})[this.previewCourseCode] ??= {})[indexToAdd] = true;
     },
     async removeFromSavePreview(indexToAdd: string, removeFromCalendar = false) {
       if (removeFromCalendar) this.removeTempPreviews([indexToAdd]);
@@ -466,19 +489,19 @@ export const useTimetableStore = defineStore('timetable', {
         useToast().add({ title: "No course code selected", description: "Cannot remove saved preview.", color: "error", });
         return
       }
-      if (this.savedPreviewIndexes[this.plan]?.[this.previewCourseCode]?.[indexToAdd]) {
-        delete this.savedPreviewIndexes[this.plan][this.previewCourseCode][indexToAdd]
+      if (this.savedPreviewIndexes[this.currentPlan]?.[this.previewCourseCode]?.[indexToAdd]) {
+        delete this.savedPreviewIndexes[this.currentPlan][this.previewCourseCode][indexToAdd]
       }
     },
     // Remove all previews included saved ones
     resetPreview() {
-      const plan = this.plan
-      if (!(plan in this.showingPreview)) return
+      const currentPlan = this.currentPlan
+      if (!(currentPlan in this.showingPreview)) return
       const calendar = this.calenderApi?.getApi().view.calendar
-      for (const event of this.showingPreview[plan]) {
+      for (const event of this.showingPreview[currentPlan]) {
         calendar.getEventById(event.id)?.remove()
       }
-      this.showingPreview[plan] = []
+      this.showingPreview[currentPlan] = []
       this.previewIndexes = {}
       this.showingPreviewIndexCount = 1
       this.totalIndexCount = 0
@@ -486,10 +509,10 @@ export const useTimetableStore = defineStore('timetable', {
     },
     // swap two given indexes
     swapIndex(courseCode: string, newIndex: string) {
-      const plan = this.plan
+      const currentPlan = this.currentPlan
       const calendar = this.calenderApi?.getApi().view.calendar
       // get event object of newIndex
-      const newLessons = this.showingPreview[plan].filter(e => e.index == newIndex)
+      const newLessons = this.showingPreview[currentPlan].filter(e => e.index == newIndex)
       // remove showingPreview
       this.resetPreview()
 
@@ -500,7 +523,7 @@ export const useTimetableStore = defineStore('timetable', {
         e.groupId = null
       })
       // remove oldIndex
-      for (const event of this.timeTable[plan][courseCode]['lessons']) {
+      for (const event of this.timeTable[currentPlan][courseCode]['lessons']) {
         calendar.getEventById(event.id).remove()
       }
       // add back to calendar
@@ -509,9 +532,9 @@ export const useTimetableStore = defineStore('timetable', {
         calendar.addEvent(event)
         newEvents.push(event)
       }
-      this.timeTable[plan][courseCode]['lessons'] = newEvents
+      this.timeTable[currentPlan][courseCode]['lessons'] = newEvents
       // update added course index
-      this.coursesAdded[plan][courseCode].index = newIndex
+      this.coursesAdded[currentPlan][courseCode].index = newIndex
     },
     // set the value of semester
     setSemester(semesterKey: string) {
@@ -521,14 +544,17 @@ export const useTimetableStore = defineStore('timetable', {
     reset() {
       const calenderApi = this.calenderApi
       const savedPreviewIndexes = this.savedPreviewIndexes
-      const events = this.calenderApi?.getApi().view.calendar.getEvents()
-      for (const event of events) {
-        event.remove()
-      }
+      this.removeAllEvents()
       this.$reset()
       this.savedPreviewIndexes = savedPreviewIndexes
       if (calenderApi) {
         this.setCalendarApi(calenderApi)
+      }
+    },
+    removeAllEvents() {
+      const events = this.calenderApi?.getApi().view.calendar.getEvents()
+      for (const event of events) {
+        event.remove()
       }
     },
     // resize the calendar
@@ -538,14 +564,75 @@ export const useTimetableStore = defineStore('timetable', {
     },
     // Return back a color to the state
     returnColor(color: string) {
-      this.colors.push(color)
+      this.colors[this.currentPlan].push(color)
     },
     // Get a random color from the state (placed here so it wont be called during store initiation?)
     getRandomColor(): string {
-      const randomIndex = Math.floor(Math.random() * this.colors.length)
-      const color = this.colors.at(randomIndex)
-      this.colors.splice(randomIndex, 1)
+      const colorOptions = this.colors[this.currentPlan]
+      const randomIndex = Math.floor(Math.random() * colorOptions.length)
+      const color = colorOptions.at(randomIndex)
+      colorOptions.splice(randomIndex, 1)
       return color || "#E65100" // fallback color
+    },
+    createNewPlan(planName: string) {
+      let newPlanNumber = 0;
+      for (let i = 0; i < 10; i++) {
+        // Generate a random plan number
+        newPlanNumber = Math.floor(Math.random() * 10000000)
+        // Check if the plan number already exists
+        if (newPlanNumber in this.plans) {
+          continue
+        }
+      }
+      if (newPlanNumber in this.plans) {
+        useToast().add({ title: `Wow you are crazy lucky and you caught me. This will only occur with a ~10^-68% chance. Should have bought the lottery instead :(`, description: "Please try again.", color: "error", });
+        return
+      }
+      // Initialise the new plan
+      this.plans[newPlanNumber] = planName
+      this.timeTable[newPlanNumber] = {}
+      this.coursesAdded[newPlanNumber] = {}
+      this.showingPreview[newPlanNumber] = []
+      this.savedPreviewIndexes[newPlanNumber] = {}
+      this.colors[newPlanNumber] = [...COLORS]
+      // Switch to the new plan
+      this.switchPlans(newPlanNumber)
+      useToast().add({ title: `New plan created: ${planName}`, description: "You can now add courses to this plan.", color: "primary", });
+    },
+    switchPlans(planNumber: number) {
+      if (!(planNumber in this.plans)) {
+        useToast().add({ title: "Plan does not exist", description: "Try again.", color: "error", });
+        return
+      }
+      this.currentPlan = planNumber
+      this.resetPreview()
+      console.log("Removing all events from calendar")
+      this.removeAllEvents()
+      console.log("Setting timetable")
+      this.setTimeTable()
+    },
+    deletePlan(planNumber: number) {
+      if (!(planNumber in this.plans)) {
+        return
+      }
+      if (planNumber === this.currentPlan) {
+        useToast().add({ title: "Cannot delete current plan", description: "Please switch to another plan first.", color: "error", });
+        return
+      }
+      // Remove the plan from all states
+      const planName = this.plans[planNumber]
+
+      delete this.plans[planNumber]
+      delete this.timeTable[planNumber]
+      delete this.coursesAdded[planNumber]
+      delete this.showingPreview[planNumber]
+      delete this.savedPreviewIndexes[planNumber]
+      delete this.colors[planNumber]
+      if (planNumber in this.previewIndexes) {
+        this.resetPreview()
+        this.switchPlans(DEFAULT_PLAN_NUMBER)
+      }
+      useToast().add({ title: `Plan ${planName} deleted`, description: "", color: "primary", });
     }
   },
   // persist: true,

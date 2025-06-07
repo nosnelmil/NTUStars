@@ -1,6 +1,6 @@
 <template>
   <div class="q-mx-md">
-    <div class="q-pa-md q-mb-sm">
+    <div class="q-pa-sm">
       <q-toolbar class="bg-primary text-white rounded-borders">
         <q-toolbar-title class="text-center text-weight-bold">
           {{ title }}
@@ -23,7 +23,6 @@ import { useTimetableStore } from '@/stores/timetable';
 
 const timetableStore = useTimetableStore()
 const title = computed(() => timetableStore.getSemesterProperName)
-
 
 function handleReset() {
   Dialog.create({

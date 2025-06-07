@@ -1,0 +1,2 @@
+export const COLORS = ['#0D47A1', '#E65100', '#FF6F00', '#F57F17', '#827717', '#33691E', '#1B5E20', '#B71C1C', '#880E4F', '#4A148C', '#311B92', '#1A237E', '#01579B', '#006064', '#004D40', '#BF360C', '#3E2723']
+export const DEFAULT_PLAN_NUMBER = 0;
