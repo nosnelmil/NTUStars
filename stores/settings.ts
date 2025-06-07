@@ -17,7 +17,7 @@ export const useSettingsStore = defineStore('settings', {
       openedChangesBefore: false,
       leftDrawerOpen: false,
       rightDrawerOpen: false,
-      darkMode: false
+      darkMode: false,
     }
   },
   getters: {
@@ -35,6 +35,7 @@ export const useSettingsStore = defineStore('settings', {
       state.openedChangesBefore = true
       return true
     },
+
   },
   actions: {
     setSettings() {

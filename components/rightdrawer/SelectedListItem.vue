@@ -12,7 +12,7 @@
     </q-item-label>
     <q-item-label v-if="props.course.index" caption >
       Index: 
-      <q-btn-dropdown :label="props.course.index" dense auto-close >
+      <q-btn-dropdown flat :label="props.course.index" dense auto-close>
         <q-list style="max-height: 200px" caption>
           <q-item v-for="index in props.courseIndexes" :key="index" clickable dense @click="onChangeIndex(index)">
             <q-item-section>

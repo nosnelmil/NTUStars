@@ -45,23 +45,23 @@
   --track-thumb-hover-color: #808080;
 }
 
-.scrollbar::-webkit-scrollbar {
+*::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.scrollbar::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background-color: var(--track-color);
   border-radius: 10px;
 }
 
-.scrollbar::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   background-color: var(--track-thumb-color);
   border-radius: 10px;
   transition: background-color 0.3s;
 }
 
-.scrollbar::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
   background-color: var(--track-thumb-hover-color);
 }
 

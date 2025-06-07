@@ -71,7 +71,7 @@ export const useTimetableStore = defineStore('timetable', {
       // All Events objects that are shown on the timetable
       timeTable: {},
       // All possible event colors left
-      colors: { 0: [...COLORS] },
+      colors: { 0: [...COLORS[0]] },
       isLoading: false,
       // The overall selected semester
       semester: null,
@@ -591,7 +591,7 @@ export const useTimetableStore = defineStore('timetable', {
       this.coursesAdded[newPlanNumber] = {}
       this.showingPreview[newPlanNumber] = []
       this.savedPreviewIndexes[newPlanNumber] = {}
-      this.colors[newPlanNumber] = [...COLORS]
+      this.colors[newPlanNumber] = [...COLORS[0]]
       // Switch to the new plan
       this.switchPlans(newPlanNumber)
       useToast().add({ title: `New plan created: ${planName}`, description: "You can now add courses to this plan.", color: "primary", });
