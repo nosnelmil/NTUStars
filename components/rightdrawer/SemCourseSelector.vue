@@ -20,9 +20,7 @@
 import SearchBar from './SearchBar.vue';
 import SelectedList from './SelectedList.vue';
 import { useTimetableStore } from '@/stores/timetable';
-import { useSettingsStore } from '@/stores/settings';
 
-const settingsStore = useSettingsStore()
 const timetableStore = useTimetableStore()
 const title = computed(() => timetableStore.getSemesterProperName)
 

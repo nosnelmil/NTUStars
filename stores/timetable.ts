@@ -229,7 +229,7 @@ export const useTimetableStore = defineStore('timetable', {
       // add the lecture slots for this course
       for (const classInfo of courseInfo.lectures) {
         const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
-        updateClassInfo.borderColor = "white"
+        // updateClassInfo.borderColor = "white"
         console.log("Adding lecture", updateClassInfo)
 
         calendar.addEvent(updateClassInfo)
@@ -570,7 +570,7 @@ function addTimetableProp(classInfo: ParsedLesson, isPreview: boolean, color: st
     classNames: ['lesson-body'].concat(isPreview ? ['lighten'] : []),
     isPreview: isPreview,
     backgroundColor: color,
-    borderColor: color,
+    borderColor: '',
     textColor: 'white',
   })
 }

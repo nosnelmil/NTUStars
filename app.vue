@@ -64,7 +64,6 @@ onMounted(() => {
 })
 
 watch(() => [route.fullPath, timetableStore.getSemester], () => {
-  console.info("Route changed to: ", route.fullPath, route.fullPath == '/' && timetableStore.getSemester != null)
   if (route.fullPath == '/' && timetableStore.getSemester != null) {
     showRightDrawer.value = true
     settingsStore.setRightDrawerValue(true)
