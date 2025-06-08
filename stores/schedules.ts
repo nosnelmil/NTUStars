@@ -81,7 +81,8 @@ export const useSchedules = defineStore('schedules', {
             codeDoesNotExist(courseCode, semester)
           }
         } catch (e) {
-          errorFetchingSchedule(courseCode, semester, String(e))
+          console.error("Error fetching schedule:", e)
+          errorFetchingSchedule(courseCode, semester)
         }
 
       }
@@ -103,7 +104,8 @@ export const useSchedules = defineStore('schedules', {
           Notify.create({ message: `Failed to retrieve semesters`, color: 'negative' })
         }
       } catch (e) {
-        Notify.create({ message: `Error retrieving semesters: ${e}`, color: 'negative' })
+        Notify.create({ message: `Failed to retrieve semesters`, color: 'negative' })
+        console.error("Error fetching semesters:", e)
       }
     },
 
@@ -135,7 +137,8 @@ export const useSchedules = defineStore('schedules', {
             return null
           }
         } catch (e) {
-          errorFetchingSchedule(courseCode, semester, String(e))
+          errorFetchingSchedule(courseCode, semester)
+          console.error("Error fetching course details:", e)
           return null
         }
       }

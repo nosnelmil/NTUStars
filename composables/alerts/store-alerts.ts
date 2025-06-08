@@ -7,9 +7,9 @@ export function codeDoesNotExist(courseCode: string, semester: string): void {
   })
 }
 
-export function errorFetchingSchedule(courseCode: string, semester: string, error: string): void {
+export function errorFetchingSchedule(courseCode: string, semester: string): void {
   Notify.create({
-    message: `Failed to fetch ${courseCode} for sem ${semester}: ${error} `,
+    message: `Unable to load ${courseCode} for sem ${semester}. Please try again. Error Code: 1001 `,
     color: 'negative'
   })
 }

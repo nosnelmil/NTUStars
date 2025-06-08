@@ -74,7 +74,7 @@ export const useTimetableStore = defineStore('timetable', {
       colors: { 0: [...COLORS[0]] },
       isLoading: false,
       // The overall selected semester
-      semester: null,
+      semester: "2025;1", // Default semester, can be changed later
       // The plan number of the timetable
       currentPlan: 0,
       // Plans that are created
@@ -497,19 +497,17 @@ export const useTimetableStore = defineStore('timetable', {
       const calendar = this.calenderApi?.getApi().view.calendar
       // get event object of newIndex
       let newLessons: CourseDisplay[] = []
-      if (!this.showingPreview[currentPlan]) {
-        // get from schedule store and create the display object
-        const scheduleStore = useSchedules()
-        const parsedLessons = scheduleStore.getParsedCourseInfo(this.semester, courseCode, newIndex)
-        console.log("Parsed lessons", parsedLessons)
-        if (!parsedLessons) {
-          useToast().add({ title: "Unexpected Error", description: "Please try again.", color: "error", });
-          return
-        }
-        newLessons = parsedLessons.map(e => addTimetableProp(e, false, this.coursesAdded[currentPlan][courseCode].backgroundColor))
-      } else {
-        newLessons = this.showingPreview[currentPlan].filter(e => e.index == newIndex)
+      console.log("Swapping index", courseCode, newIndex, "in plan", currentPlan)
+      // get from schedule store and create the display object
+      const scheduleStore = useSchedules()
+      const parsedLessons = scheduleStore.getParsedCourseInfo(this.semester, courseCode, newIndex)
+      console.log("Parsed lessons", parsedLessons)
+      if (!parsedLessons) {
+        Notify.create({ message: "Unable to swap index", color: "negative" })
+        return
       }
+      newLessons = parsedLessons.map(e => addTimetableProp(e, false, this.coursesAdded[currentPlan][courseCode].backgroundColor))
+      console.log("New lessons", newLessons)
       // remove showingPreview
       this.resetPreview()
 
