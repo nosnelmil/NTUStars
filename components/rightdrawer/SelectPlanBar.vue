@@ -7,7 +7,7 @@
           </q-item-section>
           <q-item-section v-if="plan.planNumber != DEFAULT_PLAN_NUMBER" side>
             <!-- Delete button -->
-              <q-btn name="delete" icon="delete" size="sm" round @click.stop="timetableStore.deletePlan(plan.planNumber)" />
+              <q-btn name="delete" icon="delete" size="sm" flat round @click.stop="timetableStore.deletePlan(plan.planNumber)" />
           </q-item-section>
         </q-item>
         <!-- item to create plan -->
@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
 import { DEFAULT_PLAN_NUMBER } from '~/constants/timetable';
 
 

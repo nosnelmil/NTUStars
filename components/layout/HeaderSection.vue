@@ -11,7 +11,8 @@
     <DetailsSearchBar v-if="timetableStore.getSemester != null" class="q-mr-md" />
     <q-btn class="text-capitalize q-px-md" stretch dense flat label="changes" @click="toggleChangesModal" />
     <q-btn class="text-capitalize q-px-md" stretch dense flat label="Help" @click="toggleHelpModal" />
-    <q-toggle v-model="darkMode" color="black" checked-icon="dark_mode" unchecked-icon="brightness_5"
+    <q-toggle
+      v-model="darkMode" color="black" checked-icon="dark_mode" unchecked-icon="brightness_5"
       @update:model-value="onDarkModeToggle" />
     <q-btn v-if="showRightDrawer" class="q-px-md" stretch dense flat icon="menu" @click="toggleRightDrawer" />
   </q-toolbar>
@@ -35,7 +36,7 @@ defineProps({
 const darkMode = ref(settingsStore.darkMode)
 
 function onDarkModeToggle() {
-  darkMode.value.val = settingsStore.toggelDarkMode()
+  darkMode.value = settingsStore.toggelDarkMode()
 }
 
 function toggleHelpModal() {

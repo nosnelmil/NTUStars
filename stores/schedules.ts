@@ -3,6 +3,7 @@ import { parseCourseInfoFromDB } from '../composables/parsers';
 import { codeDoesNotExist, errorFetchingSchedule } from '../composables/alerts/store-alerts';
 import type { DBCourse } from '~/models/dbCourse';
 import type { CoursesInfo } from '~/models/coursesInfo';
+import { Notify } from 'quasar';
 
 
 interface ScheduleState {
@@ -29,15 +30,6 @@ export const useSchedules = defineStore('schedules', {
       .map(([key, value]) => { return ({ label: value, value: key }) })
       .sort((a, b) => b.label.localeCompare(a.label)),
 
-    getCourseIndexes: (state) => {
-      return (semester: string, courseCode: string) => {
-        const parsedCourse = state.coursesInfo[semester]?.[courseCode];
-        if (parsedCourse && 'lessons' in parsedCourse) {
-          return Array.from(Object.keys(parsedCourse.lessons)).sort((a, b) => a.localeCompare(b))
-        }
-        return [];
-      }
-    },
     getParsedCourseInfo: (state) => {
       return (semester: string, courseCode: string, index: string) => {
         const parsedCourse = state.coursesInfo[semester]?.[courseCode];
@@ -84,7 +76,6 @@ export const useSchedules = defineStore('schedules', {
           console.error("Error fetching schedule:", e)
           errorFetchingSchedule(courseCode, semester)
         }
-
       }
     },
     async fetchSemesters() {
@@ -107,6 +98,19 @@ export const useSchedules = defineStore('schedules', {
         Notify.create({ message: `Failed to retrieve semesters`, color: 'negative' })
         console.error("Error fetching semesters:", e)
       }
+    },
+
+    async fetchCourseIndexes(semester: string, courseCode: string) {
+      let parsedCourse = this.getSchedule(semester, courseCode);
+      console.log("fetchCourseIndexes", semester, courseCode, parsedCourse)
+      if (!parsedCourse) {
+        await this.fetchCourseSchedule(semester, courseCode);
+        parsedCourse = this.getSchedule(semester, courseCode);
+      }
+      if (parsedCourse && 'lessons' in parsedCourse) {
+        return Array.from(Object.keys(parsedCourse.lessons)).sort((a, b) => a.localeCompare(b))
+      }
+      return [];
     },
 
     async fetchCourseSpecificDetails(sem: string, code: string) {
@@ -144,13 +148,5 @@ export const useSchedules = defineStore('schedules', {
       }
     },
   },
-  // persist: true
+  persist: true
 })
-
-// {
-//   afterRestore: (ctx) => {
-//     console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
-//     // ctx.store.preview = {}
-//   }
-// }
-

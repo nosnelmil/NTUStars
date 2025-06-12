@@ -32,5 +32,8 @@ export default defineNuxtConfig({
     config: {
       dark: true
     }
+  },
+  piniaPluginPersistedstate: {
+    debug: true
   }
 })

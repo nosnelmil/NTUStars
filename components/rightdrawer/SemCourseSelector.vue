@@ -10,16 +10,18 @@
     <div class="row justify-center q-mb-md full-width">
       <SearchBar />
     </div>
+   
     <q-separator spaced />
     <SelectedList />
     <q-btn flat icon="refresh" class="q-ml-auto text-capitalize q-mb-md" label="reset" @click="handleReset" />
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { Dialog } from 'quasar';
 import SearchBar from './SearchBar.vue';
 import SelectedList from './SelectedList.vue';
-import { useTimetableStore } from '@/stores/timetable';
+import { useTimetableStore } from '~/stores/timetable';
 
 const timetableStore = useTimetableStore()
 const title = computed(() => timetableStore.getSemesterProperName)

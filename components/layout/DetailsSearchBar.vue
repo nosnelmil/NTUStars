@@ -3,23 +3,24 @@
       ref="form"
       @submit="onSubmit"
     >
-        <q-input 
-          v-model="search" 
-          dense
-          filled
-          placeholder="Course Code" 
-          class="q-ml-md">
-          <template #append>
-            <q-icon v-if="search === ''" name="search" />
-            <q-icon v-else name="clear" class="cursor-pointer" @click="search = ''" />
-          </template>
-        </q-input>
+      <q-input 
+        v-model="search" 
+        dense
+        filled
+        dark
+        placeholder="Course Code" 
+        class="q-ml-md">
+        <template #append>
+          <q-icon v-if="search === ''" name="search" />
+          <q-icon v-else name="clear" class="cursor-pointer" @click="search = ''" />
+        </template>
+      </q-input>
     </q-form>
 </template>
 
 <script setup>
 import { validateCourseCode } from '@/composables/validator.js'
-import { useTimetableStore } from '@/stores/timetable.js'
+import { useTimetableStore } from '~/stores/timetable.js'
 import { useQuasar } from 'quasar'
 
 const $q = useQuasar()

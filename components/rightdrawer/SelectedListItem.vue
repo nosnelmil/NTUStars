@@ -12,11 +12,11 @@
     </q-item-label>
     <q-item-label v-if="props.course.index" caption >
       Index: 
-      <q-btn-dropdown flat :label="props.course.index" dense auto-close>
+      <q-btn-dropdown v-if="semester" flat :label="props.course.index" dense auto-close>
         <q-list style="max-height: 200px" caption>
-          <q-item v-for="index in props.courseIndexes" :key="index" clickable dense @click="onChangeIndex(index)">
+          <q-item v-for="index in indexes" :key="index" :clickable="index != selectedIndex" dense @click="onChangeIndex(index)">
             <q-item-section>
-              <q-item-label class="ellipsis">{{index}}</q-item-label>
+              <q-item-label :class="{ 'ellipsis': true, 'text-grey': index == selectedIndex }">{{index}}</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -51,19 +51,34 @@
 <script setup lang="ts">
 import type { CourseDisplay } from '~/models/courseDisplay.ts';
 
+const timetableStore = useTimetableStore()
+const scheduleStore = useSchedules()
+
 // const router = useRouter()
 const props = defineProps({
   course: {
     type: Object as PropType<CourseDisplay>,
     required: true
-  },
-  courseIndexes: {
-    type: Array as PropType<string[]>,
-    default: () => []
   }
 })
 const emits = defineEmits(["handleRemove", "handleSwapIndex"])
 
+const semester = computed(() => timetableStore.getSemester)
+
+const selectedIndex = computed(() => timetableStore.getShowingIndex(props.course.courseCode))
+
+const indexes = ref<string[]>([])
+
+// Fetch indexes when semester or course changes
+watch(
+  [semester, () => props.course.courseCode],
+  async ([semesterValue, courseCode]) => {
+    if (semesterValue && courseCode) {
+      indexes.value = await scheduleStore.fetchCourseIndexes(semesterValue, courseCode)
+    }
+  },
+  { immediate: true }
+)
 
 function onRemoveClicked(e: Event){
   e.stopPropagation();

@@ -22,6 +22,7 @@
     "@pinia/nuxt": "^0.11.0",
     "@quasar/extras": "^1.17.0",
     "eslint": "^9.28.0",
+    "ical-generator": "^9.0.0",
     "nuxt": "^3.17.4",
     "nuxt-quasar-ui": "^2.1.12",
     "pinia": "^3.0.2",

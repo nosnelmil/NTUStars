@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
 import { defineStore } from 'pinia'
+import type { EventImpl } from '@fullcalendar/core/internal';
+import type FullCalendar from '@fullcalendar/vue3'
+import type { DateSelectArg } from '@fullcalendar/core/index.js';
+import { Notify } from 'quasar';
+
 import { useSchedules } from './schedules'
 import { createEventId } from '../composables/event-utils';
-import type FullCalendar from '@fullcalendar/vue3'
 import type { ParsedLesson } from '~/models/parsedLesson';
-import type { DateSelectArg } from '@fullcalendar/core/index.js';
-import type { EventImpl } from '@fullcalendar/core/internal';
-import { Notify } from 'quasar';
 import { COLORS, DEFAULT_PLAN_NUMBER } from '~/constants/timetable';
 import type { CourseDisplay } from '~/models/courseDisplay';
 
@@ -18,7 +19,6 @@ interface TimetableState {
   showingPreviewIndexCount: number;
   totalIndexCount: number;
   previewIndexes: { [index: string]: boolean };
-  savedPreviewIndexes: { [plan: string]: { [courseCode: string]: { [index: string]: boolean } } };
   timeTable: Timetable;
   colors: { [plan: number]: string[] };
   isLoading: boolean;
@@ -66,15 +66,13 @@ export const useTimetableStore = defineStore('timetable', {
       totalIndexCount: 0,
       // Indexes for preview. Can be set to true(showing on the timetable) or false(hidden)
       previewIndexes: {},
-      // Indexes that users saved
-      savedPreviewIndexes: {},
       // All Events objects that are shown on the timetable
       timeTable: {},
       // All possible event colors left
       colors: { 0: [...COLORS[0]] },
       isLoading: false,
       // The overall selected semester
-      semester: "2025;1", // Default semester, can be changed later
+      semester: null, // Default semester, can be changed later
       // The plan number of the timetable
       currentPlan: 0,
       // Plans that are created
@@ -132,14 +130,7 @@ export const useTimetableStore = defineStore('timetable', {
     getPreviewIndexes: (state) => {
       return Object.entries(state.previewIndexes)
     },
-    getSavedPreviewIndexes: (state) =>
-      state.savedPreviewIndexes[state.currentPlan]?.[state.currentPlan]
-        ? Object.entries(state.savedPreviewIndexes[state.currentPlan][state.previewCourseCode || ""])
-        : [],
 
-    isIndexPreviewSaved: (state) => {
-      return (index: string) => state.previewCourseCode && state.savedPreviewIndexes[state.currentPlan]?.[state.previewCourseCode]?.[index]
-    },
     getPlans: (state) => {
       return Object.entries(state.plans).map(([planNumber, planName]) => ({
         planNumber: parseInt(planNumber),
@@ -383,7 +374,6 @@ export const useTimetableStore = defineStore('timetable', {
         this.previewCourseCode = courseCode
         this.totalIndexCount = 0
         this.previewIndexes[showing.index] = true;
-        (this.savedPreviewIndexes[currentPlan] ??= {})[courseCode] ??= {};
         for (const [index, indexSchedule] of Object.entries(courseInfo.lessons)) {
           this.totalIndexCount += 1
           if (index == showing.index) {
@@ -461,16 +451,12 @@ export const useTimetableStore = defineStore('timetable', {
         useToast().add({ title: "No course code selected", description: "Cannot save preview.", color: "error", });
         return
       }
-      ((this.savedPreviewIndexes[this.currentPlan] ??= {})[this.previewCourseCode] ??= {})[indexToAdd] = true;
     },
     async removeFromSavePreview(indexToAdd: string, removeFromCalendar = false) {
       if (removeFromCalendar) this.removeTempPreviews([indexToAdd]);
       if (!this.previewCourseCode) {
         useToast().add({ title: "No course code selected", description: "Cannot remove saved preview.", color: "error", });
         return
-      }
-      if (this.savedPreviewIndexes[this.currentPlan]?.[this.previewCourseCode]?.[indexToAdd]) {
-        delete this.savedPreviewIndexes[this.currentPlan][this.previewCourseCode][indexToAdd]
       }
     },
     // Remove all previews included saved ones
@@ -488,7 +474,7 @@ export const useTimetableStore = defineStore('timetable', {
       this.previewCourseCode = null
     },
     // swap two given indexes
-    swapIndex(courseCode: string, newIndex: string) {
+    async swapIndex(courseCode: string, newIndex: string) {
       if (!this.semester || !courseCode || !newIndex) {
         useToast().add({ title: "Please select a semester and course code", description: "Cannot swap index.", color: "error", });
         return
@@ -500,6 +486,8 @@ export const useTimetableStore = defineStore('timetable', {
       console.log("Swapping index", courseCode, newIndex, "in plan", currentPlan)
       // get from schedule store and create the display object
       const scheduleStore = useSchedules()
+      // fetch incase the course schedule is not fetched yet (happens when the page is refreshed)
+      await scheduleStore.fetchCourseSchedule(this.semester, courseCode)
       const parsedLessons = scheduleStore.getParsedCourseInfo(this.semester, courseCode, newIndex)
       console.log("Parsed lessons", parsedLessons)
       if (!parsedLessons) {
@@ -538,10 +526,8 @@ export const useTimetableStore = defineStore('timetable', {
     // reset the calendar
     reset() {
       const calenderApi = this.calenderApi
-      const savedPreviewIndexes = this.savedPreviewIndexes
       this.removeAllEvents()
       this.$reset()
-      this.savedPreviewIndexes = savedPreviewIndexes
       if (calenderApi) {
         this.setCalendarApi(calenderApi)
       }
@@ -588,7 +574,6 @@ export const useTimetableStore = defineStore('timetable', {
       this.timeTable[newPlanNumber] = {}
       this.coursesAdded[newPlanNumber] = {}
       this.showingPreview[newPlanNumber] = []
-      this.savedPreviewIndexes[newPlanNumber] = {}
       this.colors[newPlanNumber] = [...COLORS[0]]
       // Switch to the new plan
       this.switchPlans(newPlanNumber)
@@ -621,7 +606,6 @@ export const useTimetableStore = defineStore('timetable', {
       delete this.timeTable[planNumber]
       delete this.coursesAdded[planNumber]
       delete this.showingPreview[planNumber]
-      delete this.savedPreviewIndexes[planNumber]
       delete this.colors[planNumber]
       if (planNumber in this.previewIndexes) {
         this.resetPreview()
@@ -630,17 +614,22 @@ export const useTimetableStore = defineStore('timetable', {
       useToast().add({ title: `Plan ${planName} deleted`, description: "", color: "primary", });
     }
   },
-  // persist: true,
-  // {
-  //   afterRestore: (ctx) => {
-  //     // console.log('about to restore,' , ctx.store.$reset()) // to reset persisted state (dev used only)
-  //     ctx.store.showingPreview = {}
-  //     ctx.store.previewIndexes = {}
-  //     ctx.store.showingPreviewIndexCount = 1
-  //     ctx.store.totalIndexCount = 0
-  //     ctx.store.previewCourseCode = null
-  //   },
-  // }
+  persist: {
+    // afterHydrate: (context) => {
+    //   context.store.$reset()
+    // },
+    pick: [
+      'coursesAdded',
+      'timeTable',
+      'plans',
+      'currentPlan',
+      'semester',
+      'savedPreviewIndexes',
+      'colors',
+    ],
+    key: 'ntu-stars',
+    storage: piniaPluginPersistedstate.localStorage(),
+  },
 })
 
 function addTimetableProp(classInfo: ParsedLesson, isPreview: boolean, color: string): CourseDisplay {

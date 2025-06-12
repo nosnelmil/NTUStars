@@ -20,9 +20,9 @@
 </template>
 
 <script setup>
-import { useSchedules } from '@/stores/schedules';
-import { useTimetableStore } from '@/stores/timetable';
-import { useSettingsStore } from '@/stores/settings';
+import { useSchedules } from '~/stores/schedules';
+import { useTimetableStore } from '~/stores/timetable';
+import { useSettingsStore } from '~/stores/settings';
 
 const schedulesStore = useSchedules()
 const settingsStore = useSettingsStore()
