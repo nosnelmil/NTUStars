@@ -44,6 +44,10 @@ export const useSchedules = defineStore('schedules', {
   actions: {
     async fetchCourseSchedule(semester: string, code: string) {
       const courseCode = code.toUpperCase();
+      if (courseCode === "CUSTOM") {
+        console.warn("Custom course code provided, skipping fetch for schedule.");
+        return null;
+      }
       const courseInfo = this.getSchedule(semester, courseCode)
       if (courseInfo) {
         return courseInfo
@@ -102,7 +106,6 @@ export const useSchedules = defineStore('schedules', {
 
     async fetchCourseIndexes(semester: string, courseCode: string) {
       let parsedCourse = this.getSchedule(semester, courseCode);
-      console.log("fetchCourseIndexes", semester, courseCode, parsedCourse)
       if (!parsedCourse) {
         await this.fetchCourseSchedule(semester, courseCode);
         parsedCourse = this.getSchedule(semester, courseCode);
@@ -113,6 +116,28 @@ export const useSchedules = defineStore('schedules', {
       return [];
     },
 
+    async fetchSearchableCourses(): Promise<string[]> {
+      // get from database
+      try {
+        const response = await fetch(
+          useRuntimeConfig().public.getsearchablecoursesEndpoint,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
+        const data = await response.json()
+        if (data) {
+          return data.values
+        } else {
+          Notify.create({ message: `Failed to retrieve searchable courses`, color: 'negative' })
+          return []
+        }
+      } catch (e) {
+        Notify.create({ message: `Failed to retrieve searchable courses`, color: 'negative' })
+        console.error("Error fetching searchable courses:", e)
+        return []
+      }
+    },
     async fetchCourseSpecificDetails(sem: string, code: string) {
       const semester = sem.toUpperCase();
       const courseCode = code.toUpperCase();

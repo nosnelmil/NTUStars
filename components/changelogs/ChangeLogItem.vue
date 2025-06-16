@@ -8,6 +8,21 @@
 </template>
 
 <script setup>
+
+    defineProps({
+        title: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String,
+            required: true
+        },
+        dateTime: {
+            type: String,
+            required: true
+        }
+    });
     function formatElapsedTime(date) {
         const elapsed = new Date() - new Date(date);
         const seconds = Math.floor(elapsed / 1000);

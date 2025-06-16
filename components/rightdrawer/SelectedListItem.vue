@@ -2,12 +2,12 @@
 <q-item>
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
-      <span class="text-weight-medium text-uppercase">
+      <nuxt-link :to="`/courses-${timetableStore.getSemester}/${props.course.courseCode}`" target="_blank" class="text-weight-medium text-uppercase text-decoration:none course-link" >
         {{props.course.courseCode}}
-      </span>
-      <div class="q-ml-xs color-cube" :style="{backgroundColor: props.course.backgroundColor}"/>
+      </nuxt-link>
+      <div class="q-ml-sm color-cube" :style="{backgroundColor: props.course.backgroundColor}"/>
     </q-item-label>
-    <q-item-label caption lines="1" class="q-mb-xs">
+    <q-item-label caption lines="3" class="q-mb-xs">
       {{props.course.courseName}} | AU: {{course.au}}
     </q-item-label>
     <q-item-label v-if="props.course.index" caption >
@@ -100,5 +100,18 @@ function onChangeIndex(index: string){
   height: 11px;
   border-radius: 2px;
   align-self: center;
+  margin-bottom: 1px;
+}
+
+.course-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.course-link:hover {
+  transform: translateY(-2px);
+  opacity: 0.8;
 }
 </style>

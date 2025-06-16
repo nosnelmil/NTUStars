@@ -8,7 +8,6 @@
         NTU Stars
       </q-btn>
     </q-toolbar-title>
-    <DetailsSearchBar v-if="timetableStore.getSemester != null" class="q-mr-md" />
     <q-btn class="text-capitalize q-px-md" stretch dense flat label="changes" @click="toggleChangesModal" />
     <q-btn class="text-capitalize q-px-md" stretch dense flat label="Help" @click="toggleHelpModal" />
     <q-toggle
@@ -20,10 +19,8 @@
 
 <script setup>
 import NTUStarsIcon from '@/assets/NTUStars-icon.png'
-import DetailsSearchBar from './DetailsSearchBar.vue';
 import { useSettingsStore } from '../../stores/settings';
 const settingsStore = useSettingsStore()
-const timetableStore = useTimetableStore()
 const emits = defineEmits(['toggleHelpModal', 'toggleRightDrawer', 'toggleChangesModal'])
 
 defineProps({

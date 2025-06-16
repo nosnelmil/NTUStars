@@ -7,33 +7,49 @@
       <!-- <q-btn stretch color="primary" class="text-capitalize" icon="article" href='https://forms.gle/4CV1ZiXkRS87P8cT9' target="_blank" label=""/> -->
       <q-btn 
         class="text-capitalize text-bold" 
-        href='https://ko-fi.com/ntustarsplanner' 
+        :href="PATREON_URL"
         target="_blank" 
         color="white" 
         text-color="primary">
-        <q-avatar class="q-mr-xs" size="30px">
-          <q-img :src="KofiIcon" fit="contain" />
+        <q-avatar class="q-mr-sm" size="20px">
+          <q-img :src="PatreonLogo" fit="contain" />
         </q-avatar>
-        <div>Support This Project!</div>
-        <q-tooltip class="bg-dark" anchor="top middle" self="bottom middle" :offset="[10, 10]" max-width="500px">
+        <div>Support This Project on Patreon!</div>
+        <q-tooltip class="bg-dark" anchor="top middle" self="bottom middle" :offset="[10, 10]" max-width="600px">
           <div class="q-ma-md">
-            <p class="text-h6">Hey NTU Friends!</p>
-            <p class="text-body1">
-              I hope you're finding NTU Stars helpful for planning your semester timetables! However, running the server for this website comes with a cost, and I'm currently paying for it out of my own pocket. &#128184;<br><br>
+            <p class="text-h6 text-center">I'm Back — And NTU Stars is Getting Better Than Ever!</p>
+            <section class="text-body1">
+              <p>
+                Hi everyone 👋
+              </p>
+              <p>
+                First of all, I want to sincerely apologize for the lack of updates on <strong>NTU Stars</strong> over the past few years.
+                Like many of you, I was juggling a full academic workload while also focusing on landing an internship and securing a job —
+                and unfortunately, that meant I couldn't give NTU Stars the attention it deserved.
+              </p>
+              <p>
+                But now, I'm happy to share that I'm finally in a more stable place, and I'm ready to recommit to this project that so many
+                of you have found useful. 🙌
+              </p>
 
-              That's why I'm reaching out to ask for your help. By donating to NTU Stars, you'll be supporting the maintenance of the server and ensuring that the site stays up and running smoothly. Plus, your donation will motivate me to keep improving the site and adding new features to make your life even easier.<br><br>
+              <p>🗳️ Want to Help Decide What Comes Next?</p>
+              <p>
+                Got ideas for what NTU Stars should have next? As a member, you'll get to vote in polls and help shape the future of the platform —
+                from new features to design improvements, your input matters.
+              </p>
 
-              If you've found NTU Stars to be a valuable resource and want to see it continue to grow and evolve, please consider making a donation today! Every little bit helps, and I'll be so grateful for any support you can give! &#128512;<br><br>
-            </p>
+              <p><strong>Learn more and become a patron today to be part of building the next chapter of NTU Stars!</strong></p>              
+            </section>
           </div>
         </q-tooltip>
       </q-btn>
-      <q-btn stretch flat class="text-capitalize gt-xs" icon="article" href='https://forms.gle/4CV1ZiXkRS87P8cT9' target="_blank" label="Feedback"/>
-      <q-btn stretch flat class="text-capitalize gt-xs" icon="bug_report" href='https://forms.gle/4jCSpWpvMUuWLBzh7' target="_blank" label="Bug Report"/>
+      <q-btn stretch flat class="text-capitalize gt-xs" icon="article" :href="FEEDBACK_URL" target="_blank" label="Feedback"/>
+      <q-btn stretch flat class="text-capitalize gt-xs" icon="bug_report" :href="BUG_REPORT_URL" target="_blank" label="Bug Report"/>
     </q-toolbar>
   </q-footer>
 </template>
 
 <script setup>
-import KofiIcon from '~/assets/kofi_logo.png'
+import PatreonLogo from '~/assets/patreon_logo.png'
+import { BUG_REPORT_URL, FEEDBACK_URL, PATREON_URL } from '~/constants';
 </script>

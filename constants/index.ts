@@ -1,0 +1,3 @@
+export const PATREON_URL = "https://patreon.com/nosnelmil?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink"
+export const FEEDBACK_URL = "https://www.patreon.com/posts/general-feedback-131369124?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link"
+export const BUG_REPORT_URL = "https://www.patreon.com/posts/general-bugs-131369058?utm_medium=clipboard_copy&utm_source=copyLink&utm_campaign=postshare_creator&utm_content=join_link"

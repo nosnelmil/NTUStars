@@ -6,6 +6,7 @@
     header-nav
     :color="settingsStore.darkMode ? 'white': 'primary'"
     animated
+    style="width: 800px; margin: auto;"
   >
     <q-step
       :name="1"
@@ -26,7 +27,7 @@
       <br>
       Start by selecting a semester on the right <q-icon name="east"/>
       <q-stepper-navigation>
-        <q-btn @click="step = 2" :color="'primary'" label="Continue" />
+        <q-btn :color="'primary'" label="Continue" @click="step = 2" />
       </q-stepper-navigation>
     </q-step>
 
@@ -49,8 +50,8 @@
       <span class="text-caption text-subtitle2 text-grey-7">*working on a fix</span> -->
       
       <q-stepper-navigation>
-        <q-btn flat @click="step = 1" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
-        <q-btn @click="step = 3" color="primary" label="Continue" class="q-ml-sm" />
+        <q-btn flat :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" @click="step = 1" />
+        <q-btn color="primary" label="Continue" class="q-ml-sm" @click="step = 3" />
       </q-stepper-navigation>
     </q-step>
 
@@ -68,8 +69,8 @@
       You can do this by clicking on an event and choosing a different index to swap to.
       <q-img :src="demo1" class="q-my-md"/>
       <q-stepper-navigation>
-        <q-btn flat @click="step = 2" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
-        <q-btn @click="step = 4" color="primary" label="Continue" class="q-ml-sm" />
+        <q-btn flat :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" @click="step = 2" />
+        <q-btn color="primary" label="Continue" class="q-ml-sm" @click="step = 4" />
       </q-stepper-navigation>
     </q-step>
 
@@ -85,8 +86,8 @@
       <br>
       <q-img :src="demo2" class="q-my-md"/>
       <q-stepper-navigation>
-        <q-btn flat @click="step = 3" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" />
-        <q-btn @click="step = 5" color="primary" label="Continue" class="q-ml-sm" />
+        <q-btn flat :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" @click="step = 3" />
+        <q-btn color="primary" label="Continue" class="q-ml-sm" @click="step = 5" />
       </q-stepper-navigation>
     </q-step>
 
@@ -105,11 +106,11 @@
       <br>
       More features and improvements are coming and it will be great to hear from you too!
       <br>
-      <q-btn outline :color="settingsStore.darkMode ? 'white': 'primary'" class="text-capitalize q-mt-md" icon="article" href='https://forms.gle/4CV1ZiXkRS87P8cT9' target="_blank" label="Feedback"/>
+      <q-btn outline :color="settingsStore.darkMode ? 'white': 'primary'" class="text-capitalize q-mt-md" icon="article" :href="FEEDBACK_URL" target="_blank" label="Feedback"/>
       <br>
-      <q-btn outline :color="settingsStore.darkMode ? 'white': 'primary'" class="text-capitalize q-mt-md" icon="bug_report" href='https://forms.gle/4jCSpWpvMUuWLBzh7' target="_blank" label="Bug Report"/>
+      <q-btn outline :color="settingsStore.darkMode ? 'white': 'primary'" class="text-capitalize q-mt-md" icon="bug_report" :href="BUG_REPORT_URL" target="_blank" label="Bug Report"/>
       <q-stepper-navigation>
-        <q-btn flat @click="step = 4" :color="settingsStore.darkMode ? 'white': 'primary'" label="Back"  />
+        <q-btn flat :color="settingsStore.darkMode ? 'white': 'primary'" label="Back" @click="step = 4"  />
         <q-btn color="primary" label="Finish" class="q-ml-sm" @click="handleFinish"/>
       </q-stepper-navigation>
     </q-step>
@@ -121,6 +122,7 @@
 import { useSettingsStore } from '../stores/settings';
 import demo1 from '@/assets/demo1.gif'
 import demo2 from '@/assets/demo2.gif'
+import { BUG_REPORT_URL, FEEDBACK_URL } from '~/constants';
 
 const settingsStore = useSettingsStore()
 const emits = defineEmits(["handleFinish"])

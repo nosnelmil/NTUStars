@@ -5,6 +5,7 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
+    "dev:local": "nuxt dev --dotenv .env.local",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -22,6 +23,7 @@
     "@pinia/nuxt": "^0.11.0",
     "@quasar/extras": "^1.17.0",
     "eslint": "^9.28.0",
+    "flexsearch": "^0.8.205",
     "ical-generator": "^9.0.0",
     "nuxt": "^3.17.4",
     "nuxt-quasar-ui": "^2.1.12",

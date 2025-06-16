@@ -10,8 +10,10 @@ export default defineNuxtConfig({
     public: {
       getcoursecontentEndpoint: "",
       getscheduleEndpoint: "",
-      getsemestersEndpoint: ""
-    }
+      getsemestersEndpoint: "",
+      getsearchablecoursesEndpoint: "",
+      getsupportersEndpoint: "",
+    },
   },
   css: [
     '@/assets/css/app.css',

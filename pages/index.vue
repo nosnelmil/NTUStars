@@ -1,9 +1,9 @@
 <template>
   <div class="subcontent">
-    <div class="row justify-center">
+    <div class="row justify-center" >
       <TimetableSection v-if="semester != null" />
-      <div v-else class="flex flex-center items-center" style="min-height: 70vh;">
-        <div>
+      <div v-else class="flex flex-center items-center q-pt-xl" style="width: 100%; height:calc(100vh - 110px);">
+        <div class="q-pa-md">
           <div class="row justify-center">
             <q-avatar class="welcome-logo" size="120px">
               <img src="~/assets/NTUStars-logo.png">
@@ -17,17 +17,21 @@
             <RightdrawerSelectSemBar />
           </div>
         </div>
+        <!-- Supporters -->
+         <div class="q-mt-auto full-width q-mb-lg" >
+           <SupportersSection class="q-mx-auto" style="max-width: 70%;"/>
+         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-// import NTUStarsLogo from "@/assets/NTUStars-logo.png"
-import TimetableSection from "@/components/TimetableSection.vue"
+<script setup lang="ts">
 import { useTimetableStore } from "../stores/timetable";
 
 const semester = computed(() => useTimetableStore().getSemester)
+
+
 
 </script>
 

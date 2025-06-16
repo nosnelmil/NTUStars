@@ -124,16 +124,12 @@ function handleEventClick(clickInfo: EventClickArg) {
       // console.log('I am triggered on both OK and Cancel')
     })
     return
-  }
-
-  if (event.extendedProps.isPreview) {
+  } else if (event.extendedProps.isPreview) {
     // swap index
     const index = event.extendedProps.index
     timetableStore.swapIndex(courseCode, index)
     return
-  }
-
-  if (timetableStore.getCourseCodeShowingPreview == courseCode) {
+  }else if (timetableStore.getCourseCodeShowingPreview == courseCode) {
     timetableStore.resetPreview()
     // remove floating animation
 
