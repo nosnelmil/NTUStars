@@ -3,13 +3,14 @@
     <div class="col-12 col-md-10 q-pa-md scrollbar" style="max-height:calc(100vh - 110px); overflow-y: scroll;">
       <FullCalendar ref="calendar" :options="calendarOptions" style="min-width:700px;">
         <template #eventContent='{ event: { extendedProps } }'>
-          <div class="text-left q-pa-xs" style="height: 100%;">
+          <div class="text-left q-pa-xs overflow-auto hide-scrollbar" style="height: 100%;">
             <div class="text-bold ellipsis">
               {{ extendedProps.courseCode }} <span>{{ extendedProps.courseName }}</span>
             </div>
             <div class="calendar-body-text"> {{ extendedProps.index }}</div>
             <div v-if="extendedProps.type" class="calendar-body-text">{{ extendedProps.type }} | {{
               extendedProps.frequency }}</div>
+            <div v-if="extendedProps.venue" class="calendar-body-text">{{ extendedProps.venue }}</div>
             <q-tooltip v-if="!(Object.keys(extendedProps).length == 0)">
               <div>{{ extendedProps.courseCode }}</div>
               <div>{{ extendedProps.courseName }}</div>
