@@ -47,7 +47,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import IndexDetailTable from './indexDetailTable.vue';
+import IndexDetailTable from '~/components/details/IndexDetailTable.vue';
 
 const props = defineProps(["indexes"])
 

@@ -14,22 +14,7 @@
                     :description="changelog.description" 
                     :date-time="changelog.dateTime"/>
             </template>
-            
-            <q-separator spaced />
 
-            <q-item>
-                <q-item-section>
-                    <q-item-label overline>BUG FIXES</q-item-label>
-                </q-item-section>
-            </q-item>
-            <template v-for="changelog in bugfixes" :key="changelog.dateTime">
-                <q-separator inset/>
-                <ChangeLogItem
-                    class="q-py-md" 
-                    :title="changelog.title" 
-                    :description="changelog.description" 
-                    :date-time="changelog.dateTime"/>
-            </template>
         </q-list>
     </div>
 </template>
@@ -40,6 +25,31 @@ import { useSettingsStore } from '../../stores/settings';
 
 const settingsStore = useSettingsStore()
 const changes = [
+    {
+        title: "Search Functionality",
+        dateTime: formatDateTime("2025-06-16", "15:00"),
+        description: "You can now search for courses by their name or code. This will help you find the courses you want to add to your timetable more easily."
+    },
+    {
+        title: "Multiple Timetables",
+        dateTime: formatDateTime("2025-06-16", "15:00"),
+        description: "You can now create multiple timetables. This is useful if you want to have different timetables for different semesters or if you want to compare different timetables."
+    },
+    {
+        title: "Index Selection",
+        dateTime: formatDateTime("2025-06-16", "15:00"),
+        description: "You can now select which index you would like to preview on your calendar."
+    },
+    {
+        title: "Major UI Overhaul",
+        dateTime: formatDateTime("2025-06-16", "15:00"),
+        description: "Major UI overhaul to improve the user experience. The new design is more modern and easier to use."
+    },
+    {
+        title: "Improved Index Selection",
+        dateTime: formatDateTime("2023-07-25", "14:20"),
+        description: "The index selection process has been improved, making it easier to choose the right index for your courses."
+    },
     {
         title: "Index Selection Improvement",
         dateTime: formatDateTime("2023-07-21", "22:30"),
@@ -71,29 +81,6 @@ const changes = [
         description: "First stable version of ntu semester timetable planner."
     },
 
-]
-
-const bugfixes = [
-    {
-        title: "#4 Get Semester error",
-        dateTime: formatDateTime("2023-07-21", "12:20"),
-        description: "Insufficient memory was allocated to server running getschedule api call."
-    },
-    {
-        title: "#3 EE2101 error",
-        dateTime: formatDateTime("2023-06-28", "16:00"),
-        description: "EE2101 is not valid error."
-    },
-    {
-        title: "#2 CY1500 and CY1308 error",
-        dateTime: formatDateTime("2023-05-31", "23:24"),
-        description: "CY1500 and CY1308 cannot be found."
-    },
-    {
-        title: "#1 E2103L and E2110L error",
-        dateTime: formatDateTime("2023-05-31", "23:24"),
-        description: "Unable to add Lab modules such as E2103L and E2110L to the planner."
-    },
 ]
 
 function formatDateTime(date, time){

@@ -1,7 +1,11 @@
 <template>
     <q-item>
         <q-item-section>
-            <q-item-label class="row justify-between q-mb-xs">{{title}}  <span class="text-caption text-grey">{{formatElapsedTime(dateTime)}} </span></q-item-label>
+            <q-item-label class="row justify-between q-mb-xs">
+                {{title}}  
+                <q-badge v-if="isNew(dateTime)" color="orange" class="text-bold" floating>NEW</q-badge>
+                <span class="text-caption text-grey">{{formatElapsedTime(dateTime)}} </span>
+            </q-item-label>
             <q-item-label caption>{{description}}</q-item-label>
         </q-item-section>
     </q-item>
@@ -39,5 +43,11 @@
         } else {
             return `${seconds} second${seconds !== 1 ? 's' : ''} ago`;
         }
+    }
+    function isNew(date) {
+        const now = new Date();
+        const itemDate = new Date(date);
+        const diff = now - itemDate;
+        return diff < 24 * 60 * 60 * 1000 * 14; // less than 2 weeks
     }
 </script>

@@ -46,7 +46,6 @@
   </template>
 
 <script setup>
-import IndexDetailTable from './IndexDetailTable.vue' // Adjust the path as needed
 const props = defineProps(["indexes"])
 
 const columns = [
