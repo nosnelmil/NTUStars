@@ -165,7 +165,9 @@ export const useTimetableStore = defineStore('timetable', {
       this.calenderApi = calenderApi
     },
     async addCourse(code: string) {
-      if (!code || code.length !== 6) {
+      // Validate course code
+      if (!validateCourseCode(code)) {
+        Notify.create({ message: "Invalid course code!", color: "negative" })
         return
       }
       if (this.calenderApi == null) {
@@ -229,7 +231,7 @@ export const useTimetableStore = defineStore('timetable', {
       for (const classInfo of courseInfo.lectures) {
         const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
         // updateClassInfo.borderColor = "white"
-        console.log("Adding lecture", updateClassInfo)
+        console.debug("Adding lecture", updateClassInfo)
 
         calendar.addEvent(updateClassInfo)
         this.timeTable[currentPlan][courseCode].lectures.push(updateClassInfo)
@@ -240,7 +242,7 @@ export const useTimetableStore = defineStore('timetable', {
       for (const [index, indexSchedule] of Object.entries(courseInfo.lessons)) {
         for (const classInfo of indexSchedule) {
           const updateClassInfo = addTimetableProp(classInfo, false, backgroundColor)
-          console.log("Adding lesson", updateClassInfo)
+          console.debug("Adding lesson", updateClassInfo)
           calendar.addEvent(updateClassInfo)
           this.timeTable[currentPlan][courseCode].lessons.push(updateClassInfo)
         }
@@ -483,19 +485,17 @@ export const useTimetableStore = defineStore('timetable', {
       const calendar = this.calenderApi?.getApi().view.calendar
       // get event object of newIndex
       let newLessons: CourseDisplay[] = []
-      console.log("Swapping index", courseCode, newIndex, "in plan", currentPlan)
+      console.debug("Swapping index", courseCode, newIndex, "in plan", currentPlan)
       // get from schedule store and create the display object
       const scheduleStore = useSchedules()
       // fetch incase the course schedule is not fetched yet (happens when the page is refreshed)
       await scheduleStore.fetchCourseSchedule(this.semester, courseCode)
       const parsedLessons = scheduleStore.getParsedCourseInfo(this.semester, courseCode, newIndex)
-      console.log("Parsed lessons", parsedLessons)
       if (!parsedLessons) {
         Notify.create({ message: "Unable to swap index", color: "negative" })
         return
       }
       newLessons = parsedLessons.map(e => addTimetableProp(e, false, this.coursesAdded[currentPlan][courseCode].backgroundColor))
-      console.log("New lessons", newLessons)
       // remove showingPreview
       this.resetPreview()
 
@@ -586,9 +586,9 @@ export const useTimetableStore = defineStore('timetable', {
       }
       this.currentPlan = planNumber
       this.resetPreview()
-      console.log("Removing all events from calendar")
+      console.debug("Removing all events from calendar")
       this.removeAllEvents()
-      console.log("Setting timetable")
+      console.debug("Setting timetable")
       this.setTimeTable()
     },
     deletePlan(planNumber: number) {
@@ -615,9 +615,6 @@ export const useTimetableStore = defineStore('timetable', {
     }
   },
   persist: {
-    // afterHydrate: (context) => {
-    //   context.store.$reset()
-    // },
     pick: [
       'coursesAdded',
       'timeTable',

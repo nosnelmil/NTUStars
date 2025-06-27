@@ -7,8 +7,9 @@
     "dev": "nuxt dev",
     "dev:local": "nuxt dev --dotenv .env.local",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "preview": "nuxt preview --dotenv .env.local",
+    "postinstall": "nuxt prepare",
+    "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.17",

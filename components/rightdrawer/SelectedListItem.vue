@@ -2,7 +2,7 @@
 <q-item>
   <q-item-section top>
     <q-item-label class="row item-center" lines="1">
-      <nuxt-link :to="`/courses-${timetableStore.getSemester}/${props.course.courseCode}`" target="_blank" class="text-weight-medium text-uppercase text-decoration:none course-link" >
+      <nuxt-link :to="getCourseLink()" target="_blank" class="text-weight-medium text-uppercase text-decoration:none course-link" >
         {{props.course.courseCode}}
       </nuxt-link>
       <div class="q-ml-sm color-cube" :style="{backgroundColor: props.course.backgroundColor}"/>
@@ -87,10 +87,19 @@ function onRemoveClicked(e: Event){
 function onChangeIndex(index: string){
   emits("handleSwapIndex", {index: index})
 }
-// function onListItemClicked(){
-//   const routeData = router.resolve({name: 'coursedetails', params: {details: [props.semester, props.course.courseCode]}});
-//   window.open(routeData.href, '_blank');
-// }
+
+function getCourseLink(): string {
+  const semesterString = timetableStore.getSemester;
+  const courseCode = props.course.courseCode;
+  if (!semesterString || !courseCode) {
+    return '';
+  }
+  const [year, semester] = semesterString.split(';');
+  if (!year || !semester) {
+    return '';
+  }
+  return `/courses/${year}-${semester}-${courseCode}`;
+}
 
 </script>
 

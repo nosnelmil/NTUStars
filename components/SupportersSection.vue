@@ -42,7 +42,7 @@ onMounted(async () => {
       headers: { 'Content-Type': 'application/json' },
     })
   const data = (await response.json()) as Record<string, Supporter[]>;
-  console.log('Fetched supporters data:', data);
+  console.debug('Fetched supporters data:', data);
   const supportersData = data["supporters"] as Supporter[];
   // Sort supporters by rank if available, otherwise keep original order
   supporters.value = supportersData.sort((a, b) => {

@@ -1,3 +1,3 @@
 export function validateCourseCode(courseCode: string): boolean {
-  return courseCode == null || courseCode.length == 6
+  return (courseCode.length == 6 && /^[a-zA-Z]{2}(?=(?:.*\d){2,})[a-zA-Z0-9]{4}$/.test(courseCode));
 };

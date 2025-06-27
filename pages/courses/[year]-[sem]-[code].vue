@@ -10,10 +10,10 @@
                        {{ course.courseCode }} {{ course.courseName }}
                     </span>
                     <q-space/>
-                    <q-chip class="self-center" color="accent" text-color="white">AU: {{ course.au }}</q-chip>
+                    <q-chip class="self-center text-bold" color="secondary" text-color="white">AU: {{ course.au }}</q-chip>
                 </div>
                 <div class="col-12 col-md-9 q-mb-md">
-                    <q-separator spaced></q-separator>
+                    <q-separator spaced/>
                 </div>
                 <!-- Pre-requisites -->
                 <div class="col-12 col-md-9 q-mb-sm">
@@ -26,14 +26,14 @@
                 <div class="col-12 col-md-9 q-mb-sm">
                     <div class=" q-gutter-sm items-center">
                         <span class="text-subtitile1">Mutually exclusive with:</span>
-                        <q-btn v-for="val in course.mutexWith" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
+                        <q-btn v-for="val in course.mutexWith" :key="val" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
                     </div>
                 </div>
                 <!-- Not available to Programme: -->
                 <div class="col-12 col-md-9 q-mb-sm">
                     <div class=" q-gutter-sm items-center">
                         <span class="text-subtitile1">Not available to Programme:</span>
-                        <q-btn v-for="val in course.notAvailTo" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
+                        <q-btn v-for="val in course.notAvailTo" :key="val" flat dense unelevated color="secondary" :label="val" class="q-my-none text-weight-bold" />
                     </div>
                 </div>
                 <!-- Not available to all Programme with -->
@@ -63,13 +63,10 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { useSchedules } from '@/stores/schedules.js'
-import IndexTable from '../components/details/IndexTable.vue';
-import CourseViewSkeleton from './CourseViewSkeleton.vue';
-import NotFoundSection from '../components/layout/NotFoundSection.vue';
+import { useSchedules } from '~/stores/schedules.js'
+import IndexTable from '~/components/details/IndexTable.vue';
+import NotFoundSection from '~/components/layout/NotFoundSection.vue';
+import CourseViewSkeleton from '~/components/layout/CourseViewSkeleton.vue';
 
 const route = useRoute()
 const scheduleStore = useSchedules()
@@ -78,9 +75,10 @@ const isValid = ref(false)
 const course = ref(null)
 
 onMounted(async () => {
-    const sem = route.params.details[0]
-    const courseCode = route.params.details[1]
-    const courseInfo = await scheduleStore.fecthCourseSpecificDetails(sem, courseCode)
+    const sem = route.params.sem
+    const year = route.params.year
+    const courseCode = route.params.code
+    const courseInfo = await scheduleStore.fetchCourseSpecificDetails(`${year};${sem}`, courseCode)
     if(courseInfo){
         // populate data
         course.value = courseInfo

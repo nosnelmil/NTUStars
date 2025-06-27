@@ -22,7 +22,6 @@
       @filter="(val, done, abort) => handleSearchChange(val, done, abort)"
       @update:model-value="(val) => {
         if (val) {
-          console.log('Enter pressed, submitting search:', val)
           onSubmit()
         }
       }"
@@ -77,7 +76,6 @@ onMounted(async () => {
 })
 
 function handleSearchChange(value: string, done: (callbackFn: () => void, afterFn?: ((ref: QSelect) => void) | undefined) => void, abort: () => void) {
-  console.log('Search input changed:', value)
   isLoading.value = true
   const searchValue = String(value).trim().toUpperCase()
   try {
@@ -99,7 +97,6 @@ function handleSearchChange(value: string, done: (callbackFn: () => void, afterF
 
 
 async function onSubmit(val: string | null = null) {
-  console.log('onSubmit called with value:', val)
   if ((!search.value || search.value == "") && !val ) return
   isLoading.value = true;
 
@@ -118,7 +115,7 @@ async function onSubmit(val: string | null = null) {
   } else {
     searchVal = searchVal.toUpperCase()
   }
-  console.log('Submitting search:', searchVal)
+  
   await timetableStore.addCourse(searchVal)
   isLoading.value = false
   select.value?.hidePopup()

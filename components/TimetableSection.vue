@@ -103,7 +103,7 @@ function handleDateSelect(selectInfo: DateSelectArg) {
 }
 
 function handleEventClick(clickInfo: EventClickArg) {
-  console.log("Event clicked:", clickInfo.event.title, clickInfo.event.extendedProps.isCustom, clickInfo.event.extendedProps.isPreview);
+  console.debug("Event clicked:", clickInfo.event.title, clickInfo.event.extendedProps.isCustom, clickInfo.event.extendedProps.isPreview);
   const event = clickInfo.event
   const courseCode = event.extendedProps.courseCode
   if (event.extendedProps.isCustom) {
@@ -119,10 +119,6 @@ function handleEventClick(clickInfo: EventClickArg) {
     }).onOk(data => {
       event.setExtendedProp("courseName", data)
       timetableStore.updateCustomEvent(event)
-    }).onCancel(() => {
-      // console.log('>>>> Cancel')
-    }).onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
     })
     return
   } else if (event.extendedProps.isPreview) {

@@ -36,12 +36,11 @@ const plansObject = computed(() => timetableStore.getPlans)
 const currentPlan = computed(() => timetableStore.getCurrentPlan)
 
 function onItemClick(plan: { planNumber: number; planName: string }) {
-  console.log("onItemClick", plan)
   timetableStore.switchPlans(plan.planNumber)
 }
 
 function onCreateNewPlan() {
-  console.log("onCreateNewPlan")
+  console.debug("onCreateNewPlan")
   // timetableStore.createNewPlan()
   $q.dialog({
     title: 'Create New Plan',

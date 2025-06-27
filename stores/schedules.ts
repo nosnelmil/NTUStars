@@ -33,7 +33,7 @@ export const useSchedules = defineStore('schedules', {
     getParsedCourseInfo: (state) => {
       return (semester: string, courseCode: string, index: string) => {
         const parsedCourse = state.coursesInfo[semester]?.[courseCode];
-        console.log("getParsedCourseInfo", semester, courseCode, index, parsedCourse)
+        console.debug("getParsedCourseInfo", semester, courseCode, index, parsedCourse)
         if (parsedCourse && 'lessons' in parsedCourse) {
           return parsedCourse.lessons[index] || null;
         }
@@ -84,7 +84,7 @@ export const useSchedules = defineStore('schedules', {
     },
     async fetchSemesters() {
       // get from database
-      console.info("Fetching semesters from database at endpoint:", useRuntimeConfig().public.getsemestersEndpoint)
+      console.debug("Fetching semesters from database at endpoint:", useRuntimeConfig().public.getsemestersEndpoint)
       try {
         const response = await fetch(
           useRuntimeConfig().public.getsemestersEndpoint,
